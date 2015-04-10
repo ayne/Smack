@@ -142,17 +142,23 @@ public abstract class AbstractDebugger implements SmackDebugger {
     }
 
     public void userHasLogged(String user) {
-        String localpart = XmppStringUtils.parseLocalpart(user);
-        boolean isAnonymous = "".equals(localpart);
-        String title =
-                "User logged (" + connection.getConnectionCounter() + "): "
-                + (isAnonymous ? "" : localpart)
-                + "@"
-                + connection.getServiceName()
-                + ":"
-                + connection.getPort();
-        title += "/" + XmppStringUtils.parseResource(user);
-        log(title);
+        //added checker if user is not null.
+        //for cases when fast recon was used, user passed from
+        //binding of resource is null.
+        if(user != null){
+            String localpart = XmppStringUtils.parseLocalpart(user);
+            boolean isAnonymous = "".equals(localpart);
+            String title =
+                    "User logged (" + connection.getConnectionCounter() + "): "
+                            + (isAnonymous ? "" : localpart)
+                            + "@"
+                            + connection.getServiceName()
+                            + ":"
+                            + connection.getPort();
+            title += "/" + XmppStringUtils.parseResource(user);
+            log(title);
+        }
+
         // Add the connection listener to the connection so that the debugger can be notified
         // whenever the connection is closed.
         connection.addConnectionListener(connListener);

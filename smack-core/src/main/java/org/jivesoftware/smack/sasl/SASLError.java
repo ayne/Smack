@@ -31,7 +31,8 @@ public enum SASLError {
     malformed_request,
     mechanism_too_weak,
     not_authorized,
-    temporary_auth_failure;
+    temporary_auth_failure,
+    token_expired; //Added to throw error when token is expired.
 
     private static final Logger LOGGER = Logger.getLogger(SASLError.class.getName());
     @Override

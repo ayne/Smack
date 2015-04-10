@@ -5,7 +5,8 @@ otherwise carefully considered for deployment. The API may change even
 between patch versions."""
 
 dependencies {
-	compile project(':smack-core')
+    apply plugin: 'java'
+    compile project(':smack-core')
 	compile project(':smack-extensions')
 	testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }

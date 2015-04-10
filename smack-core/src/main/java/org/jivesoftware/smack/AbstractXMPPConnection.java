@@ -447,6 +447,7 @@ public abstract class AbstractXMPPConnection implements XMPPConnection {
         throwNotConnectedExceptionIfAppropriate();
         throwAlreadyLoggedInExceptionIfAppropriate();
         usedUsername = username != null ? username.toString() : null;
+        user = usedUsername;
         usedPassword = password;
         usedResource = resource;
         loginNonAnonymously(usedUsername, usedPassword, usedResource);

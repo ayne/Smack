@@ -390,7 +390,11 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
             LOGGER.fine("Stream resumption failed, continuing with normal stream establishment process");
         }
 
-        bindResourceAndEstablishSession(resource);
+        /**
+         * Removed for fast recon in Babble. No more resource binding needed.
+         * bindResourceAndEstablishSession(resource);
+         */
+
 
         List<Stanza> previouslyUnackedStanzas = new LinkedList<Stanza>();
         if (unacknowledgedStanzas != null) {
@@ -1041,9 +1045,17 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             break;
                         case Success.ELEMENT:
                             Success success = new Success(parser.nextText());
-                            // We now need to bind a resource for the connection
-                            // Open a new stream and wait for the response
-                            openStream();
+
+                            /**
+                             * Removed for Babble's TLS and fast recon optimization.
+                             * In Babble when you send an <auth></auth> together with
+                             * the choice of mechanism, the resource binding with version code
+                             * is included
+                             * // We now need to bind a resource for the connection
+                             * // Open a new stream and wait for the response
+                             * openStream();
+                             */
+
                             // The SASL authentication with the server was successful. The next step
                             // will be to bind the resource
                             getSASLAuthentication().authenticated(success);

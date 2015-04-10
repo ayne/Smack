@@ -12,7 +12,8 @@ dependencies {
 	androidProjects.findAll {
 		![':smack-tcp', ':smack-extensions', ':smack-experimental', ':smack-bosh'].contains(it.getPath())
 	}.each { project ->
-		compile project
+        apply plugin: 'java'
+        compile project
 	}
 }
 

@@ -16,14 +16,14 @@
  */
 package org.jivesoftware.smack.sasl.packet;
 
-import java.util.Map;
-
 import org.jivesoftware.smack.packet.AbstractError;
 import org.jivesoftware.smack.packet.PlainStreamElement;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.util.Objects;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smack.util.XmlStringBuilder;
+
+import java.util.Map;
 
 public class SaslStreamElements {
     public static final String NAMESPACE = "urn:ietf:params:xml:ns:xmpp-sasl";
@@ -33,6 +33,8 @@ public class SaslStreamElements {
      */
     public static class AuthMechanism implements PlainStreamElement {
         public static final String ELEMENT = "auth";
+        private static final String BABBLE_RESOURCE = "BA";
+        private static final int BABBLE_VERSION = 1;
 
         private final String mechanism;
         private final String authenticationText;
@@ -46,7 +48,14 @@ public class SaslStreamElements {
         @Override
         public XmlStringBuilder toXML() {
             XmlStringBuilder xml = new XmlStringBuilder();
-            xml.halfOpenElement(ELEMENT).xmlnsAttribute(NAMESPACE).attribute("mechanism", mechanism).rightAngleBracket();
+            //Added attributes resource and version here since we removed resource binding in
+            // XMPPTCPConnection and parsing of "Success"
+            //("\" xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" resource=\"BA\" version=\"1\">") must
+            //be included here
+            xml.halfOpenElement(ELEMENT).xmlnsAttribute(NAMESPACE).attribute("mechanism", mechanism)
+                    .attribute("resource", BABBLE_RESOURCE)
+                    .attribute("version", BABBLE_VERSION)
+                    .rightAngleBracket();
             xml.optAppend(authenticationText);
             xml.closeElement(ELEMENT);
             return xml;
@@ -120,6 +129,8 @@ public class SaslStreamElements {
         public static final String ELEMENT = "success";
 
         final private String data;
+        private String yapToken; //Added to retrieve Babble's yapToken
+        private String tts; //Added to retrieve tts in Babble.
 
         /**
          * Construct a new SASL success stream element with optional additional data for the SASL layer
@@ -139,6 +150,28 @@ public class SaslStreamElements {
         public String getData() {
             return data;
         }
+
+
+        //Below are added to include yapToken and tts in parsing the packet
+        public Success(String yapToken, String data) {
+            this.data = data;
+            this.yapToken = yapToken;
+        }
+
+        public Success(String yapToken, String tts, String data) {
+            this.data = data;
+            this.yapToken = yapToken;
+            this.tts = tts;
+        }
+
+        public String getToken(){
+            return yapToken;
+        }
+
+        public String getTts(){
+            return tts;
+        }
+
 
         @Override
         public XmlStringBuilder toXML() {
