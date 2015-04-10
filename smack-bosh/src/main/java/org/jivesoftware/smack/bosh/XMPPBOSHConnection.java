@@ -259,6 +259,21 @@ public class XMPPBOSHConnection extends AbstractXMPPConnection {
     }
 
     @Override
+    public boolean isRosterEnabled() {
+        return false;
+    }
+
+    @Override
+    public String getToken() {
+        return null;
+    }
+
+    @Override
+    public String getTts() {
+        return null;
+    }
+
+    @Override
     protected void sendStanzaInternal(Stanza packet) throws NotConnectedException {
         sendElement(packet);
     }

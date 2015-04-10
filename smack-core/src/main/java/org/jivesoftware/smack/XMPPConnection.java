@@ -601,4 +601,28 @@ public interface XMPPConnection {
      */
     public long getLastStanzaReceived();
 
+    /**
+     * Additional API modification for Babble. As Babble doesn't support roster loading.
+     * Returns whether to enable roster loading
+     *
+     * @return true if to load roster, false otherwise
+     */
+    public boolean isRosterEnabled();
+
+
+    /**
+     * Additional API modification for Babble to get XYAP token upon authentication
+     *
+     * @return String XYAP Token
+     */
+    public String getToken();
+
+    /**
+     * Additional API modification for Babble to get TTS upon authentication
+     *
+     * @return String in millis for time to sleep (for GCM)
+     */
+    public String getTts();
+
+
 }

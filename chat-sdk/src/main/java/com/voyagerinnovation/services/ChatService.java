@@ -20,7 +20,9 @@ import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.packet.ArchiveIQ;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.sasl.SASLMechanism;
@@ -53,7 +55,10 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
-
+        Timber.d("Stanza " + packet.toXML().toString());
+        if(packet instanceof ArchiveResultIQ){
+            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
+        }
     }
 
     public class LocalBinder extends Binder {
@@ -107,6 +112,7 @@ public class ChatService extends Service implements ConnectionListener,
         xmppConnection = new XMPPTCPConnection(mConnectionConfig);
         xmppConnection.addConnectionListener(this);
         xmppConnection.addSyncStanzaListener(this, this);
+        xmppConnection.setRosterEnabled(false);
 
         Map<String, String> registeredMechs = SASLAuthentication.getRegisterdSASLMechanisms();
         for (Map.Entry<String, String> entry : registeredMechs.entrySet()){
@@ -211,7 +217,16 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
-        Timber.d("Authenticated xyaptoken is ");
+        Timber.d("Authenticated xyaptoken is " + connection.getToken());
+        Timber.d("Authenticated tts is " + connection.getTts());
+        ArchiveIQ archiveIq = new ArchiveIQ("0", "0", "0");
+        archiveIq.setTo(Environment.IM_ARCHIVE_HOST);
+        archiveIq.setStanzaId(null);
+        try {
+            xmppConnection.sendStanza(archiveIq);
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
     }
 
 

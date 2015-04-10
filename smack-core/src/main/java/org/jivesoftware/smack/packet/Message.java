@@ -17,15 +17,15 @@
 
 package org.jivesoftware.smack.packet;
 
+import org.jivesoftware.smack.util.TypedCloneable;
+import org.jivesoftware.smack.util.XmlStringBuilder;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import org.jivesoftware.smack.util.TypedCloneable;
-import org.jivesoftware.smack.util.XmlStringBuilder;
 
 /**
  * Represents XMPP message packets. A message can be one of several types:
@@ -58,6 +58,15 @@ public final class Message extends Stanza implements TypedCloneable<Message> {
 
     private Type type;
     private String thread = null;
+
+    private String nickname; //For Babble's sso messaging
+    private String name;    //For Babble's sso messaging
+    private String msisdn;  //For Babble's sso messaging
+
+    //For Babble: the time the server received the message
+    private String ts;
+    //For Babble's archiving: source of message. whether from archive or real time message if none.
+    private String source;
 
     private final Set<Subject> subjects = new HashSet<Subject>();
     private final Set<Body> bodies = new HashSet<Body>();
@@ -416,12 +425,76 @@ public final class Message extends Stanza implements TypedCloneable<Message> {
         
     }
 
+
+    /**
+     * For Babble's archiving, and messaging modifications
+     *
+     */
+
+
+
+    public void setNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    public String getNickname(){
+        return this.nickname;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public void setMsisdn(String msisdn){
+        this.msisdn = msisdn;
+    }
+
+    public String getMsisdn(){
+        return this.msisdn;
+    }
+
+    public void setSource(String source){
+        this.source = source;
+    }
+
+    public String getSource(){
+        return this.source;
+    }
+
+    public void setTS(String time){
+        this.ts = time;
+    }
+
+    public String getTS(){
+        return this.ts;
+    }
+
+
     @Override
     public XmlStringBuilder toXML() {
         XmlStringBuilder buf = new XmlStringBuilder();
         buf.halfOpenElement(ELEMENT);
         addCommonAttributes(buf);
         buf.optAttribute("type", type);
+
+        //For Babble's messaging modification
+        if (nickname != null) {
+            buf.append(" nickname=\"").append(nickname).append("\"");
+        }
+        if (name != null) {
+            buf.append(" name=\"").append(name).append("\"");
+        }
+        if (msisdn != null) {
+            buf.append(" msisdn=\"").append(msisdn).append("\"");
+        }
+        if (ts != null){
+            buf.append(" ts=\"").append(ts).append("\"");
+        }
+
         buf.rightAngleBracket();
 
         // Add the subject in the default language
@@ -629,7 +702,33 @@ public final class Message extends Stanza implements TypedCloneable<Message> {
         /**
          * indicates a messaging error.
          */
-        error;
+        error,
+
+        /**
+         * Typically short text message used in line-by-line chat interfaces with nickname such that sender will be anonymous.
+         */
+        secret_chat,
+
+        /**
+         * indicates a voyager group chat.
+         */
+        vgc,
+
+        /**
+         * indicates a voyager group chat with nickname such that message will be anonymous.
+         */
+        secret_vgc,
+
+        /**
+         * indicates a voyager secret message.
+         */
+        secret,
+
+        /**
+         * indicates a contact has upgraded to SSO which will trigger update jid of contact
+         */
+        info;
+
 
         /**
          * Converts a String into the corresponding types. Valid String values that can be converted

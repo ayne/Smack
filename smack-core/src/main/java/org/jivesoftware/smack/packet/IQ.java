@@ -17,10 +17,10 @@
 
 package org.jivesoftware.smack.packet;
 
-import java.util.Locale;
-
 import org.jivesoftware.smack.util.Objects;
 import org.jivesoftware.smack.util.XmlStringBuilder;
+
+import java.util.Locale;
 
 /**
  * The base IQ (Info/Query) packet. IQ packets are used to get and set information
@@ -48,6 +48,9 @@ public abstract class IQ extends Stanza {
     private final String childElementName;
     private final String childElementNamespace;
 
+    private String endpoint; //For Babble's endpoint after <iq> archive. This endpoint will
+                                //be an HTTP url where client can retrieve archived messages
+
     private Type type = Type.get;
 
     public IQ(IQ iq) {
@@ -64,6 +67,21 @@ public abstract class IQ extends Stanza {
     protected IQ(String childElementName, String childElementNamespace) {
         this.childElementName = childElementName;
         this.childElementNamespace = childElementNamespace;
+    }
+
+    /*
+     * Sets Babble's HTTP end point for archived messages.
+    */
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    /*
+     * Returns Babble's HTTP end point for archived messages.
+     * @return the HTTP endpoint for message archive.
+     */
+    public String getEndpoint(){
+        return endpoint;
     }
 
     /**
@@ -124,6 +142,12 @@ public abstract class IQ extends Stanza {
             buf.attribute("type", type.toString());
         }
         buf.rightAngleBracket();
+
+        //For Babble's message archive endpoint.
+        if(endpoint != null){
+            buf.append("<endpoint xmlns=\'archive\'>" + endpoint + "</endpoint>");
+        }
+
         buf.append(getChildElementXML());
         buf.closeElement(IQ_ELEMENT);
         return buf;

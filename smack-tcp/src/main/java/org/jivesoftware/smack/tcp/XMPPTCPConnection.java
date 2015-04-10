@@ -141,6 +141,16 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     private static final int QUEUE_SIZE = 500;
     private static final Logger LOGGER = Logger.getLogger(XMPPTCPConnection.class.getName());
 
+
+
+    /*
+     * For Babble modifications to enable/disable roster,
+     * to get XYAP token and TTS
+     */
+    private boolean isRosterEnabled;
+    private String token;
+    private String tts;
+
     /**
      * The socket which is used for this connection.
      */
@@ -537,6 +547,26 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
     @Override
     public void send(PlainStreamElement element) throws NotConnectedException {
         packetWriter.sendStreamElement(element);
+    }
+
+
+    public void setRosterEnabled(boolean isRosterEnabled){
+        this.isRosterEnabled = isRosterEnabled;
+    }
+
+    @Override
+    public  String getToken(){
+        return this.token;
+    }
+
+    @Override
+    public String getTts(){
+        return this.tts;
+    }
+
+    @Override
+    public boolean isRosterEnabled() {
+        return isRosterEnabled;
     }
 
     @Override
@@ -1044,7 +1074,12 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             getSASLAuthentication().challengeReceived(challengeData);
                             break;
                         case Success.ELEMENT:
-                            Success success = new Success(parser.nextText());
+                            /**
+                             * Additional parsing of xyaptok and tts for Babble
+                             */
+                            token  = parser.getAttributeValue(null, "x-yap-token");
+                            tts = parser.getAttributeValue(null, "c-tts");
+                            Success success = new Success(token, tts, parser.nextText());
 
                             /**
                              * Removed for Babble's TLS and fast recon optimization.

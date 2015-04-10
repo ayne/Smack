@@ -16,6 +16,30 @@
  */
 package org.jivesoftware.smack.util;
 
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.compress.packet.Compress;
+import org.jivesoftware.smack.packet.DefaultExtensionElement;
+import org.jivesoftware.smack.packet.EmptyResultIQ;
+import org.jivesoftware.smack.packet.ErrorIQ;
+import org.jivesoftware.smack.packet.ExtensionElement;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Session;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.StartTls;
+import org.jivesoftware.smack.packet.StreamError;
+import org.jivesoftware.smack.packet.UnparsedIQ;
+import org.jivesoftware.smack.packet.XMPPError;
+import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
+import org.jivesoftware.smack.provider.ExtensionElementProvider;
+import org.jivesoftware.smack.provider.IQProvider;
+import org.jivesoftware.smack.provider.ProviderManager;
+import org.jivesoftware.smack.sasl.packet.SaslStreamElements.SASLFailure;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -27,29 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.compress.packet.Compress;
-import org.jivesoftware.smack.packet.DefaultExtensionElement;
-import org.jivesoftware.smack.packet.EmptyResultIQ;
-import org.jivesoftware.smack.packet.ErrorIQ;
-import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.packet.ExtensionElement;
-import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.Session;
-import org.jivesoftware.smack.packet.StartTls;
-import org.jivesoftware.smack.packet.StreamError;
-import org.jivesoftware.smack.packet.UnparsedIQ;
-import org.jivesoftware.smack.packet.XMPPError;
-import org.jivesoftware.smack.provider.IQProvider;
-import org.jivesoftware.smack.provider.ExtensionElementProvider;
-import org.jivesoftware.smack.provider.ProviderManager;
-import org.jivesoftware.smack.sasl.packet.SaslStreamElements.SASLFailure;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 /**
  * Utility class that helps to parse packets. Any parsing packets method that must be shared
@@ -229,6 +230,12 @@ public class PacketParserUtils {
             message.setType(Message.Type.fromString(typeString));
         }
         String language = getLanguageAttribute(parser);
+
+        message.setNickname(parser.getAttributeValue("", "nickname"));
+        message.setName(parser.getAttributeValue("", "name"));
+        message.setMsisdn(parser.getAttributeValue("", "msisdn"));
+        message.setSource(parser.getAttributeValue("", "source"));
+        message.setTS(parser.getAttributeValue("", "ts"));
         
         // determine message's default language
         String defaultLanguage = null;
@@ -530,7 +537,11 @@ public class PacketParserUtils {
         presence.setTo(parser.getAttributeValue("", "to"));
         presence.setFrom(parser.getAttributeValue("", "from"));
         presence.setStanzaId(parser.getAttributeValue("", "id"));
-
+        //Added for Babble's SSO support
+        presence.setMsisdn(parser.getAttributeValue("", "msisdn"));
+        presence.setFirstName(parser.getAttributeValue("", "first_name"));
+        presence.setLastName(parser.getAttributeValue("", "last_name"));
+        presence.setTS(parser.getAttributeValue("", "ts"));
         String language = getLanguageAttribute(parser);
         if (language != null && !"".equals(language.trim())) {
         	presence.setLanguage(language);
@@ -610,7 +621,7 @@ public class PacketParserUtils {
         final String to = parser.getAttributeValue("", "to");
         final String from = parser.getAttributeValue("", "from");
         final IQ.Type type = IQ.Type.fromString(parser.getAttributeValue("", "type"));
-
+        String endpoint = "";
         outerloop: while (true) {
             int eventType = parser.next();
 
@@ -621,6 +632,14 @@ public class PacketParserUtils {
                 switch(elementName) {
                 case "error":
                     error = PacketParserUtils.parseError(parser);
+                    break;
+
+                //For Babble's endpoint for message archive.
+                //Needs to handle this case so that UnparsedIQ will not be thrown and so that
+                //this packet will be thrown to StanzaListeners.
+                case "endpoint":
+                    endpoint = parser.nextText();
+                    iqPacket = new ArchiveResultIQ(endpoint);
                     break;
                 // Otherwise, see if there is a registered provider for
                 // this element name and namespace.
@@ -667,6 +686,7 @@ public class PacketParserUtils {
         iqPacket.setFrom(from);
         iqPacket.setType(type);
         iqPacket.setError(error);
+        iqPacket.setEndpoint(endpoint);
 
         return iqPacket;
     }

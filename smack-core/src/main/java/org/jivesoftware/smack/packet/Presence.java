@@ -17,11 +17,11 @@
 
 package org.jivesoftware.smack.packet;
 
-import java.util.Locale;
-
 import org.jivesoftware.smack.util.Objects;
 import org.jivesoftware.smack.util.TypedCloneable;
 import org.jivesoftware.smack.util.XmlStringBuilder;
+
+import java.util.Locale;
 
 /**
  * Represents XMPP presence packets. Every presence stanza(/packet) has a type, which is one of
@@ -65,6 +65,11 @@ public final class Presence extends Stanza implements TypedCloneable<Presence> {
     private int priority = Integer.MIN_VALUE;
     private Mode mode = null;
 
+    private String ts;
+    private String msisdn;  //Addition for Babble SSO
+    private String first_name;  //Addition for Babble SSO
+    private String last_name;   //Addition for Babble SSO
+
     /**
      * Creates a new presence update. Status, priority, and mode are left un-set.
      *
@@ -104,6 +109,30 @@ public final class Presence extends Stanza implements TypedCloneable<Presence> {
         this.status = other.status;
         this.priority = other.priority;
         this.mode = other.mode;
+    }
+
+    public String getMsisdn() {
+        return msisdn;
+    }
+
+    public void setMsisdn(String msisdn) {
+        this.msisdn = msisdn;
+    }
+
+    public String getFirstName() {
+        return first_name;
+    }
+
+    public void setFirstName(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLastName() {
+        return last_name;
+    }
+
+    public void setLastName(String last_name) {
+        this.last_name = last_name;
     }
 
     /**
@@ -181,6 +210,14 @@ public final class Presence extends Stanza implements TypedCloneable<Presence> {
      */
     public int getPriority() {
         return priority;
+    }
+
+    public void setTS(String time){
+        this.ts = time;
+    }
+
+    public String getTS(){
+        return this.ts;
     }
 
     /**

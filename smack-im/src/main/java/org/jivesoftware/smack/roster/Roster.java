@@ -210,7 +210,7 @@ public class Roster extends Manager {
                 if (!isRosterLoadedAtLogin())
                     return;
                 // We are done here if the connection was resumed
-                if (resumed) {
+                if (resumed || !connection.isRosterEnabled()) {
                     return;
                 }
                 try {

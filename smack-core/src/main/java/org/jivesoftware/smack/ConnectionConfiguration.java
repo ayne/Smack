@@ -92,6 +92,8 @@ public abstract class ConnectionConfiguration {
 
     protected final boolean allowNullOrEmptyUsername;
 
+    private boolean isRosterLoadingEnabled;
+
     protected ConnectionConfiguration(Builder<?,?> builder) {
         username = builder.username;
         password = builder.password;
@@ -129,6 +131,17 @@ public abstract class ConnectionConfiguration {
         legacySessionDisabled = builder.legacySessionDisabled;
         debuggerEnabled = builder.debuggerEnabled;
         allowNullOrEmptyUsername = builder.allowEmptyOrNullUsername;
+    }
+
+
+    /**
+     * Additional API modification for Babble. As Babble doesn't support roster loading.
+     * Returns whether to enable roster loading
+     *
+     * @return true if to load roster, false otherwise
+     */
+    public boolean isRosterLoadingEnabled(){
+        return isRosterLoadingEnabled;
     }
 
     /**
