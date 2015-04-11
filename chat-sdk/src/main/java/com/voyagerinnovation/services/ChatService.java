@@ -50,19 +50,6 @@ public class ChatService extends Service implements ConnectionListener,
     private String yapToken;
     private String tts;
 
-    @Override
-    public boolean accept(Stanza stanza) {
-        return true;
-    }
-
-    @Override
-    public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
-        Timber.d("Stanza " + packet.toXML().toString());
-        if (packet instanceof ArchiveResultIQ) {
-            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
-        }
-    }
-
     public class LocalBinder extends Binder {
         public ChatService getService() {
             return ChatService.this;
@@ -75,6 +62,16 @@ public class ChatService extends Service implements ConnectionListener,
         public void handleMessage(Message message) {
 
         }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return Service.START_STICKY;
     }
 
 
@@ -124,6 +121,7 @@ public class ChatService extends Service implements ConnectionListener,
         xmpptcpConnection.addSyncStanzaListener(this, this);
         xmpptcpConnection.setRosterEnabled(false);
 
+        //Unregister all preloaded mechanism except for PLAIN and register XYAPTOKENMechanism
         Map<String, String> registeredMechs = SASLAuthentication.getRegisterdSASLMechanisms();
         for (Map.Entry<String, String> entry : registeredMechs.entrySet()) {
             if (!SASLMechanism.PLAIN.equals(entry.getValue())) {
@@ -131,7 +129,7 @@ public class ChatService extends Service implements ConnectionListener,
             }
         }
 
-        //SASLAuthentication.registerSASLMechanism(new SASLPlainMechanism());
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(null));
 
     }
 
@@ -144,11 +142,11 @@ public class ChatService extends Service implements ConnectionListener,
     public void loginPlain(String jid, String password) {
 
         SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
-        SASLAuthentication.registerSASLMechanism(new SASLPlainMechanism());
+        SASLAuthentication.unBlacklistSASLMechanism(SASLMechanism.PLAIN);
 
         try {
             xmpptcpConnection.login(jid, password,
-                    Environment.IM_RESOURCE);
+                    SASLPlainMechanism.NAME);
         } catch (XMPPException e) {
             e.printStackTrace();
             if (e instanceof SASLErrorException) {
@@ -157,6 +155,10 @@ public class ChatService extends Service implements ConnectionListener,
                     if (SASLError.not_authorized == saslErrorException.getSASLFailure()
                             .getSASLError()) {
                         Timber.e("Not authorized. Please login again!");
+                    }
+                    else if(SASLError.token_expired  == saslErrorException.getSASLFailure()
+                            .getSASLError()) {
+                        Timber.e("TOKEN EXPIRED WHILE DOING PLAIN");
                     }
                 }
             }
@@ -176,8 +178,7 @@ public class ChatService extends Service implements ConnectionListener,
      */
     public void loginXyap(String username, String yapToken) {
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism
-                (yapToken));
+        SASLAuthentication.unBlacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
 
         Timber.d("Logging in using xyap " + yapToken);
         try {
@@ -190,7 +191,8 @@ public class ChatService extends Service implements ConnectionListener,
                 if (saslErrorException.getSASLFailure() != null) {
                     if (SASLError.token_expired == saslErrorException.getSASLFailure()
                             .getSASLError()) {
-                        //loginPlain();
+                        Timber.e("Token expired. Logign in PLAIN ...");
+                        loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
                     }
                 }
             }
@@ -250,6 +252,21 @@ public class ChatService extends Service implements ConnectionListener,
     }
 
 
+
+    @Override
+    public boolean accept(Stanza stanza) {
+        return true;
+    }
+
+    @Override
+    public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
+        Timber.d("Stanza " + packet.toXML().toString());
+        if (packet instanceof ArchiveResultIQ) {
+            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
+        }
+    }
+
+
     @Override
     public void connected(final XMPPConnection connection) {
         Timber.d("Connected");
@@ -279,20 +296,9 @@ public class ChatService extends Service implements ConnectionListener,
         }
     }
 
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return Service.START_STICKY;
-    }
-
     @Override
     public void connectionClosed() {
-
+        Timber.d("connection closed");
     }
 
     @Override
@@ -317,7 +323,7 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void reconnectionFailed(Exception e) {
-
+        Timber.d("reconnected failed ");
     }
 
     /**
