@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,7 +14,6 @@ import android.view.View;
 import com.voyagerinnovation.services.ChatService;
 
 import chat.voyagerinnovation.com.chat.R;
-import timber.log.Timber;
 
 
 public abstract class ChatActivity extends ActionBarActivity {
@@ -29,7 +29,6 @@ public abstract class ChatActivity extends ActionBarActivity {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Timber.d("onServiceConnected");
             onChatServiceConnected(name, service);
             mChatService = ((ChatService.LocalBinder) service).getService();
             if(!mChatService.isConnected()){
@@ -50,7 +49,6 @@ public abstract class ChatActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Timber.d("onCreate of sdk");
         startService(new Intent(this, ChatService.class));
         bindService(new Intent(this, ChatService.class),
                 mServiceConnection, BIND_AUTO_CREATE);
@@ -66,6 +64,18 @@ public abstract class ChatActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 mChatService.disconnect();
+            }
+        });
+
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    mChatService.getP2PMessageManager().sendMessage(null, "hello", "test2" +
+                                "@babbleim.com");
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

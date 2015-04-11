@@ -72,7 +72,7 @@ public class MessageEventManager extends Manager {
      *
      * @param con an XMPPConnection to a XMPP server.
      */
-    private MessageEventManager(XMPPConnection connection) {
+    public MessageEventManager(XMPPConnection connection) {
         super(connection);
         // Listens for all message event packets and fire the proper message event listeners.
         connection.addAsyncStanzaListener(new StanzaListener() {

@@ -35,5 +35,6 @@ dependencies {
     compile project(':smack-android-extensions')
     compile project(':smack-core')
     compile project(':smack-tcp')
+    compile project(':smack-legacy')
     compile 'com.jakewharton.timber:timber:2.5.1'
 }

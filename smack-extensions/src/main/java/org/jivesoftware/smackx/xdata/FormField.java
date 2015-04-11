@@ -17,13 +17,14 @@
 
 package org.jivesoftware.smackx.xdata;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.jivesoftware.smack.packet.NamedElement;
 import org.jivesoftware.smack.util.XmlStringBuilder;
 import org.jivesoftware.smackx.xdatavalidation.packet.ValidateElement;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Represents a field of a form. The field could be used to represent a question to complete,
@@ -142,6 +143,7 @@ public class FormField implements NamedElement {
     private final List<Option> options = new ArrayList<Option>();
     private final List<String> values = new ArrayList<String>();
     private ValidateElement validateElement;
+    private Media media; //For Babble media attachment in message
 
     /**
      * Creates a new FormField with the variable name that uniquely identifies the field
@@ -358,6 +360,24 @@ public class FormField implements NamedElement {
         return ELEMENT;
     }
 
+    /**
+     * To set media attachment in Babble's message
+     * @param media
+     */
+    public void setMedia(Media media) {
+        synchronized (media) {
+            this.media = media;
+        }
+    }
+
+    /**
+     * To get Media or attachment in Babble's message
+     * @return The media included in the message
+     */
+    public Media getMedia() {
+        return media;
+    }
+
     public XmlStringBuilder toXML() {
         XmlStringBuilder buf = new XmlStringBuilder(this);
         // Add attributes
@@ -376,6 +396,13 @@ public class FormField implements NamedElement {
         for (Option option : getOptions()) {
             buf.append(option.toXML());
         }
+
+        Media media = getMedia();
+
+        if (media != null) {
+            buf.append(getMedia().toXML());
+        }
+
         buf.optElement(validateElement);
         buf.closeElement(this);
         return buf;
@@ -492,5 +519,111 @@ public class FormField implements NamedElement {
             result = 37 * result + (label == null ? 0 : label.hashCode());
             return result;
         }
+    }
+
+    public static class Media {
+
+        private static final String XMLNS = "urn:xmpp:media-element";
+
+        private int height;
+        private int width;
+        private final List<Uri> uris = new ArrayList<Media.Uri>();
+
+        public String getXmlns() {
+            return XMLNS;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
+        }
+
+        public int getHeight() {
+            return this.height;
+        }
+
+        public void setWidth(int width) {
+            this.width = width;
+        }
+
+        public int getWidth() {
+            return this.width;
+        }
+
+        public void addUri(Media.Uri uri) {
+            synchronized (uris) {
+                uris.add(uri);
+            }
+        }
+
+        public Iterator<Uri> getUris() {
+            synchronized (uris) {
+                return Collections.unmodifiableList(new ArrayList<Media.Uri>(uris)).iterator();
+            }
+        }
+
+        public String toXML() {
+
+            StringBuilder xmlBuilder = new StringBuilder();
+            xmlBuilder.append("<media xmlns=\"" + XMLNS + "\">");
+            // add values
+            for (Iterator<Uri> i = getUris(); i.hasNext();) {
+                xmlBuilder.append(i.next().toXML());
+            }
+
+            // media tail tag
+            xmlBuilder.append("</media>");
+
+            return xmlBuilder.toString();
+        }
+
+        public static class Uri {
+            private String type;
+            private String value;
+            private final ArrayList<String> params = new ArrayList<String>();
+
+            public void setType(String type) {
+                this.type = type;
+            }
+
+            public String getType() {
+                return this.type;
+            }
+
+            public void setValue(String value) {
+                this.value = value;
+            }
+
+            public String getValue() {
+                return this.value;
+            }
+
+            public void addParams(String param) {
+                synchronized (params) {
+                    params.add(param);
+                }
+            }
+
+            public Iterator<String> getParams() {
+                synchronized (params) {
+                    return Collections.unmodifiableList(new ArrayList<String>(params)).iterator();
+                }
+            }
+
+            public String toXML() {
+                StringBuilder xmlBuilder = new StringBuilder();
+                xmlBuilder.append("<uri type=\"" + type);
+
+                for (Iterator<String> i = getParams(); i.hasNext();) {
+                    xmlBuilder.append("; " + i.next());
+                }
+
+                xmlBuilder.append("\">");
+                xmlBuilder.append(value);
+                xmlBuilder.append("</uri>");
+                return xmlBuilder.toString();
+            }
+
+        }
+
     }
 }

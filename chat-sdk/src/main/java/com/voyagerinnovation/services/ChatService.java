@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.Message;
 
 import com.voyagerinnovation.environment.Environment;
+import com.voyagerinnovation.services.managers.P2PMessageManager;
 import com.voyagerinnovation.smack.security.authentication.DummySSLSocketFactory;
 import com.voyagerinnovation.smack.security.authentication.XYAPTokenMechanism;
 
@@ -49,6 +50,7 @@ public class ChatService extends Service implements ConnectionListener,
     private final IBinder mBinder = new LocalBinder();
     private String yapToken;
     private String tts;
+    private P2PMessageManager p2PMessageManager;
 
     public class LocalBinder extends Binder {
         public ChatService getService() {
@@ -79,9 +81,7 @@ public class ChatService extends Service implements ConnectionListener,
     public void onCreate() {
         Timber.i("New ChatService instance created");
         super.onCreate();
-        //SmackAndroid.init(this);
         configureConnection();
-        connect();
 
     }
 
@@ -131,6 +131,12 @@ public class ChatService extends Service implements ConnectionListener,
 
         SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(null));
 
+        p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
+
+    }
+
+    public P2PMessageManager getP2PMessageManager(){
+        return this.p2PMessageManager;
     }
 
     /**
@@ -247,8 +253,10 @@ public class ChatService extends Service implements ConnectionListener,
 //        }
         //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
 
-        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
-                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
+        loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
+
+//        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
+//                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
     }
 
 
