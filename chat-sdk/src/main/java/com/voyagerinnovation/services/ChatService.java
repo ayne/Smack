@@ -26,6 +26,7 @@ import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.sasl.SASLMechanism;
+import org.jivesoftware.smack.sasl.provided.SASLPlainMechanism;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 
@@ -37,13 +38,14 @@ import timber.log.Timber;
 //import org.jivesoftware.smack.SmackAndroid;
 
 /**
+ * Service that handles connection to XMPP server as well as parsing of incoming stanzas.
  * Created by charmanesantiago on 3/25/15.
  */
 public class ChatService extends Service implements ConnectionListener,
-         StanzaListener, StanzaFilter {
+        StanzaListener, StanzaFilter {
 
 
-    private XMPPTCPConnection xmppConnection;
+    private XMPPTCPConnection xmpptcpConnection;
     private final IBinder mBinder = new LocalBinder();
     private String yapToken;
     private String tts;
@@ -56,7 +58,7 @@ public class ChatService extends Service implements ConnectionListener,
     @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
         Timber.d("Stanza " + packet.toXML().toString());
-        if(packet instanceof ArchiveResultIQ){
+        if (packet instanceof ArchiveResultIQ) {
             Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
         }
     }
@@ -89,14 +91,22 @@ public class ChatService extends Service implements ConnectionListener,
     private void configureConnection() {
         SmackConfiguration.DEBUG = true;
 
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax.SASLCramMD5Mechanism");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax.SASLDigestMD5Mechanism");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax.SASLExternalMechanism");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax.SASLGSSAPIMechanism");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax.SASLJavaXMechanism");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax.SASLJavaXSmackInitializer");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.core.SCRAMSHA1Mechanism");
-//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.core.SASLXOauth2Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLCramMD5Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLDigestMD5Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLExternalMechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLGSSAPIMechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLJavaXMechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLJavaXSmackInitializer");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.core
+// .SCRAMSHA1Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.core
+// .SASLXOauth2Mechanism");
 
 
         XMPPTCPConnectionConfiguration mConnectionConfig = XMPPTCPConnectionConfiguration.builder()
@@ -109,14 +119,14 @@ public class ChatService extends Service implements ConnectionListener,
                 .setDebuggerEnabled(Environment.IS_DEBUG)
                 .build();
 
-        xmppConnection = new XMPPTCPConnection(mConnectionConfig);
-        xmppConnection.addConnectionListener(this);
-        xmppConnection.addSyncStanzaListener(this, this);
-        xmppConnection.setRosterEnabled(false);
+        xmpptcpConnection = new XMPPTCPConnection(mConnectionConfig);
+        xmpptcpConnection.addConnectionListener(this);
+        xmpptcpConnection.addSyncStanzaListener(this, this);
+        xmpptcpConnection.setRosterEnabled(false);
 
         Map<String, String> registeredMechs = SASLAuthentication.getRegisterdSASLMechanisms();
-        for (Map.Entry<String, String> entry : registeredMechs.entrySet()){
-            if(!SASLMechanism.PLAIN.equals(entry.getValue())){
+        for (Map.Entry<String, String> entry : registeredMechs.entrySet()) {
+            if (!SASLMechanism.PLAIN.equals(entry.getValue())) {
                 SASLAuthentication.blacklistSASLMechanism(entry.getValue());
             }
         }
@@ -125,18 +135,19 @@ public class ChatService extends Service implements ConnectionListener,
 
     }
 
-    private void loginPlain() {
+    /**
+     * Method to login to Babble using jid and password
+     *
+     * @param jid      full jid of the user (i.e tes1@babbleim.com)
+     * @param password password of the passed jid
+     */
+    public void loginPlain(String jid, String password) {
 
-//        Map<String, String> registeredMechs = SASLAuthentication.getRegisterdSASLMechanisms();
-//        for (Map.Entry<String, String> entry : registeredMechs.entrySet()){
-//            if(!SASLMechanism.PLAIN.equals(entry.getValue())){
-//                SASLAuthentication.blacklistSASLMechanism(entry.getValue());
-//            }
-//        }
+        SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
+        SASLAuthentication.registerSASLMechanism(new SASLPlainMechanism());
 
         try {
-            xmppConnection.login("test1" + Environment.IM_SUFFIX,
-                    "vvtest1vv",
+            xmpptcpConnection.login(jid, password,
                     Environment.IM_RESOURCE);
         } catch (XMPPException e) {
             e.printStackTrace();
@@ -156,13 +167,21 @@ public class ChatService extends Service implements ConnectionListener,
         }
     }
 
-    private void loginXyap() {
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism("u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
-                "/LWEEGS0dqzXP6jixUOTIkMa0T500XezGEzDRcRih7ozTSUnR2COJuNIftmq2baLOBSmg63A4pieZpP"));
+    /**
+     * Method to login to Babble via the XYAP Token.
+     *
+     * @param username The username (not full jid) of the user.
+     * @param yapToken The token (x-yap-token) to be used for logging in.
+     *                 This is retrieved from <success></success> response after <auth></auth>
+     */
+    public void loginXyap(String username, String yapToken) {
+        SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism
+                (yapToken));
+
+        Timber.d("Logging in using xyap " + yapToken);
         try {
-            xmppConnection.login("test1" +
-                            "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
-                            "/LWEEGS0dqzXP6jixUOTIkMa0T500XezGEzDRcRih7ozTSUnR2COJuNIftmq2baLOBSmg63A4pieZpP",
+            xmpptcpConnection.login(username, yapToken,
                     XYAPTokenMechanism.MECHANISM_NAME);
         } catch (XMPPException e) {
             e.printStackTrace();
@@ -182,13 +201,19 @@ public class ChatService extends Service implements ConnectionListener,
         }
     }
 
+    /**
+     * Method to connect to XMPP server. This method performs an automatic login to the server
+     * if previous connection state was logged (authenticated).
+     */
     public void connect() {
         new Thread() {
             @Override
             public void run() {
-                Timber.d("Connecting...");
+                Timber.d("Connecting... is connected " + xmpptcpConnection.isConnected());
                 try {
-                    xmppConnection.connect();
+                    if (!xmpptcpConnection.isConnected()) {
+                        xmpptcpConnection.connect();
+                    }
                 } catch (SmackException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -201,15 +226,39 @@ public class ChatService extends Service implements ConnectionListener,
 
     }
 
+    public void disconnect() {
+        new Thread() {
+            @Override
+            public void run() {
+                Timber.d("Disconnecting...");
+                xmpptcpConnection.disconnect();
+            }
+        }.start();
+    }
+
+    public void authenticate() {
+        Timber.d("do authenticate manually");
+//        if (yapToken != null) {
+//            loginXyap("test1", yapToken);
+//        } else {
+//            loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
+//        }
+        //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
+
+        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
+                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
+    }
+
 
     @Override
-    public void connected(XMPPConnection connection) {
+    public void connected(final XMPPConnection connection) {
         Timber.d("Connected");
         new Thread() {
             @Override
             public void run() {
-                //loginXyap();
-                loginPlain();
+                if (!xmpptcpConnection.isAuthenticated()) {
+                    authenticate();
+                }
             }
         }.start();
 
@@ -217,18 +266,18 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
-        Timber.d("Authenticated xyaptoken is " + connection.getToken());
+        yapToken = connection.getToken();
+        Timber.d("Authenticated xyaptoken is " + yapToken);
         Timber.d("Authenticated tts is " + connection.getTts());
         ArchiveIQ archiveIq = new ArchiveIQ("0", "0", "0");
         archiveIq.setTo(Environment.IM_ARCHIVE_HOST);
         archiveIq.setStanzaId(null);
         try {
-            xmppConnection.sendStanza(archiveIq);
+            xmpptcpConnection.sendStanza(archiveIq);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
     }
-
 
 
     @Override
@@ -271,12 +320,21 @@ public class ChatService extends Service implements ConnectionListener,
 
     }
 
+    /**
+     * This method only return whether connected to the server. Not necessarily authenticated.
+     *
+     * @return true if connected to the server, false otherwise.
+     */
     public boolean isConnected() {
-        return xmppConnection.isConnected();
+        return xmpptcpConnection.isConnected();
     }
 
+
+    /**
+     * @return true if authenticated to the server (logged in)
+     */
     public boolean isAuthenticated() {
-        return xmppConnection.isAuthenticated();
+        return xmpptcpConnection.isAuthenticated();
     }
 
 }

@@ -6,6 +6,8 @@ import org.jivesoftware.smack.sasl.packet.SaslStreamElements;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import timber.log.Timber;
+
 public class XYAPTokenMechanism extends SASLMechanism {
 
 
@@ -23,11 +25,12 @@ public class XYAPTokenMechanism extends SASLMechanism {
 
     @Override
     protected byte[] getAuthenticationText() throws SmackException {
-        return new byte[0];
+        return null;
     }
 
     @Override
     public String getName() {
+        Timber.d("Returning SASL mech name " + MECHANISM_NAME);
         return MECHANISM_NAME;
     }
 

@@ -8,13 +8,17 @@ import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.voyagerinnovation.services.ChatService;
 
 import chat.voyagerinnovation.com.chat.R;
+import timber.log.Timber;
 
 
 public abstract class ChatActivity extends ActionBarActivity {
+
+    private ChatService mChatService;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -25,7 +29,17 @@ public abstract class ChatActivity extends ActionBarActivity {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Timber.d("onServiceConnected");
             onChatServiceConnected(name, service);
+            mChatService = ((ChatService.LocalBinder) service).getService();
+            if(!mChatService.isConnected()){
+                mChatService.connect();
+            }
+            else{
+                if(!mChatService.isAuthenticated()){
+                    mChatService.authenticate();
+                }
+            }
         }
     };
 
@@ -36,9 +50,24 @@ public abstract class ChatActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Timber.d("onCreate of sdk");
         startService(new Intent(this, ChatService.class));
         bindService(new Intent(this, ChatService.class),
                 mServiceConnection, BIND_AUTO_CREATE);
+
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mChatService.connect();
+            }
+        });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mChatService.disconnect();
+            }
+        });
     }
 
 
