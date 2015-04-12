@@ -3,6 +3,7 @@ package com.voyagerinnovation.services.managers;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
+import com.voyagerinnovation.constants.Constants;
 import com.voyagerinnovation.util.BabbleImageProcessorUtil;
 
 import org.jivesoftware.smack.SmackException;
@@ -18,24 +19,6 @@ import org.jivesoftware.smackx.xevent.MessageEventManager;
  * Created by charmanesantiago on 4/11/15.
  */
 public class P2PMessageManager {
-
-    public static final String JID_SECRET_CHAT_ADMIRER = "secret_chat#";
-    public static final String JID_SECRET_CHAT_ADMIREE = "secret_chat&";
-
-    public final static String JABBERXDELAY = "urn:xmpp:delay";
-    public final static String JABBERXDATA = "jabber:x:data";
-    public final static String JABBERXCONFERENCE = "jabber:x:conference";
-    public final static String JABBERXEVENT = "j:x:event";
-    public final static String VCARD = "vcard";
-    public final static String ATTACHMENT = "attachment";
-    public final static String LOCATION = "location";
-    public final static String STICKER = "stickeR";
-    public final static String THUMBNAIL = "thumbnail";
-    public final static String FORM = "form";
-
-    /////////////////// Chat State Constants
-    public final static int CHAT_STATE_COMPOSING = 1;
-    public final static int CHAT_STATE_PAUSED = 2;
 
     XMPPTCPConnection xmpptcpConnection;
 
@@ -59,6 +42,15 @@ public class P2PMessageManager {
         }
     }
 
+    /**
+     * Method to send an IP to CS message via XMPP
+     *
+     * @param packetId
+     * @param message
+     * @param toJID
+     * @param imCsSuffix
+     * @throws RemoteException
+     */
     public void sendIpToCsSms(String packetId, String message, String toJID, String imCsSuffix)
             throws RemoteException {
         Message newMessage = new Message();
@@ -93,28 +85,24 @@ public class P2PMessageManager {
      *                    this will be parsed to get the real JID: MSISDN@babbleim.com,
      *                    but will use the original value as JID when inserting in MessagesTable
      *                    and ConversationsTable
-     * @param timestamp   The phone system timestamp. NOT the last server time.
      * @param nickname    The nickname used in doing the anonymous message
      * @throws android.os.RemoteException
      */
     public void sendMessageAnonymously(String packetId, String message,
-                                       String toAnonymous, String timestamp, String nickname)
+                                       String toAnonymous, String nickname)
             throws RemoteException {
 
         Message newMessage = new Message();
         if (packetId != null) {
             newMessage.setPacketID(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
         String toJID = toAnonymous;
 
-        if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIREE)) {
+        if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIREE)) {
             toJID = toAnonymous.split("&")[1];
             //set nickname to null since this should REPLY to an anonymous user
             nickname = null;
-        } else if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIRER)) {
+        } else if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIRER)) {
             toJID = toAnonymous.split("#")[1];
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
@@ -173,7 +161,7 @@ public class P2PMessageManager {
      * @param toJID the real JID to be set as "to" in message packet and to be inserted in the db
      */
     public void sendSecretImage(String packetId, String attachmentUrl,
-                                String localUrl, String toJID, String timestamp, String mimeType)
+                                String localUrl, String toJID, String mimeType)
             throws RemoteException {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -187,7 +175,7 @@ public class P2PMessageManager {
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(ATTACHMENT);
+        FormField field = new FormField(Constants.ATTACHMENT);
         FormField.Media mediaField = new FormField.Media();
         FormField.Media.Uri uri = new FormField.Media.Uri();
         uri.setValue(attachmentUrl);
@@ -199,7 +187,7 @@ public class P2PMessageManager {
 
         String base64 = BabbleImageProcessorUtil.generateThumbnail(packetId, localUrl,
                 mimeType);
-        FormField thumbnailField = new FormField(THUMBNAIL);
+        FormField thumbnailField = new FormField(Constants.THUMBNAIL);
         thumbnailField.addValue(base64);
         form.addField(thumbnailField);
         newMessage.addExtension(form);
@@ -217,11 +205,12 @@ public class P2PMessageManager {
      * because the message is not anonymous. And is also different from normal chat because this
      * message
      * will disappear
+     * //TODO add sample body for sending sticker
      *
-     * @param to the real JID to be set as "to" in message packet and to be inserted in the db
+     * @param to   the real JID to be set as "to" in message packet and to be inserted in the db
+     * @param body the sticker id to be sent. it is sent as a body of a message.
      */
-    public void sendSecretSticker(String packetId, String body, String to,
-                                  String mimeType, String timestamp) throws RemoteException {
+    public void sendSecretSticker(String packetId, String body, String to) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -233,12 +222,8 @@ public class P2PMessageManager {
             newMessage.setStanzaId(packetId);
         }
 
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
-
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(STICKER);
+        FormField field = new FormField(Constants.STICKER);
         field.addValue(body);
         form.addField(field);
 
@@ -251,8 +236,15 @@ public class P2PMessageManager {
         }
     }
 
-    public void sendSecretLocationAttachment(String packetId, String body, String toJID,
-                                             String timestamp) {
+    /**
+     * Method to send a secret message with location
+     * //TODO add sample lat lng body
+     *
+     * @param packetId
+     * @param body     the lat lng of the location
+     * @param toJID
+     */
+    public void sendSecretLocationAttachment(String packetId, String body, String toJID) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -262,12 +254,9 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setStanzaId(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(LOCATION);
+        FormField field = new FormField(Constants.LOCATION);
         field.addValue(body);
         form.addField(field);
 
@@ -282,8 +271,15 @@ public class P2PMessageManager {
         }
     }
 
-    public void sendSecretAudioAttachment(String packetId, String attachmentUrl,
-                                          String localUrl, String toJID, String timestamp,
+    /**
+     * Method to send secret message with audio
+     *
+     * @param packetId
+     * @param attachmentUrl The url of the audio clip
+     * @param toJID
+     * @param mimeType
+     */
+    public void sendSecretAudioAttachment(String packetId, String attachmentUrl, String toJID,
                                           String mimeType) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -294,12 +290,9 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setStanzaId(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(ATTACHMENT);
+        FormField field = new FormField(Constants.ATTACHMENT);
         FormField.Media mediaField = new FormField.Media();
         FormField.Media.Uri uri = new FormField.Media.Uri();
         uri.setValue(attachmentUrl);
@@ -321,14 +314,14 @@ public class P2PMessageManager {
     /**
      * method to send a type chat message  with attachment from the actual IMMessageManager
      *
-     * @param packetId  The packet id to be assigned in the message stanza. If this is null,
-     *                  a new packet id will be generated else, the passed value is used and
-     *                  will be treated as resending the message
-     * @param toJID     The real JID of the recipient (+MSISDN@babbleim.com)
-     * @param timestamp The phone system timestamp. NOT the last server time.
+     * @param packetId      The packet id to be assigned in the message stanza. If this is null,
+     *                      a new packet id will be generated else, the passed value is used and
+     *                      will be treated as resending the message
+     * @param attachmentUrl The url of the attachment
+     * @param toJID         The real JID of the recipient (+MSISDN@babbleim.com)
      */
     public void sendImageAttachment(String packetId, String attachmentUrl,
-                                    String localUrl, String toJID, String timestamp,
+                                    String localUrl, String toJID,
                                     String mimeType) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -340,7 +333,7 @@ public class P2PMessageManager {
             newMessage.setStanzaId(packetId);
         }
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(ATTACHMENT);
+        FormField field = new FormField(Constants.ATTACHMENT);
         FormField.Media mediaField = new FormField.Media();
         FormField.Media.Uri uri = new FormField.Media.Uri();
         uri.setValue(attachmentUrl);
@@ -351,7 +344,7 @@ public class P2PMessageManager {
 
         String base64 = BabbleImageProcessorUtil.generateThumbnail(packetId, localUrl,
                 mimeType);
-        FormField thumbnailField = new FormField(THUMBNAIL);
+        FormField thumbnailField = new FormField(Constants.THUMBNAIL);
         thumbnailField.addValue(base64);
         form.addField(thumbnailField);
 
@@ -379,14 +372,12 @@ public class P2PMessageManager {
      *                      this will be parsed to get the real JID: MSISDN@babbleim.com,
      *                      but will use the original value as JID when inserting in MessagesTable
      *                      and ConversationsTable
-     * @param timestamp     The phone system timestamp. NOT the last server time.
      * @param nickname
      * @throws android.os.RemoteException
      */
     public void sendImageAttachmentAnonymously(String packetId,
                                                String attachmentUrl, String localUrl,
                                                String toAnonymous,
-                                               String timestamp,
                                                String mimeType, String nickname) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -397,11 +388,11 @@ public class P2PMessageManager {
         }
 
         String toJID = toAnonymous;
-        if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIREE)) {
+        if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIREE)) {
             toJID = toAnonymous.split("&")[1];
             //set nickname to null since this should REPLY to an anonymous user
             nickname = null;
-        } else if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIRER)) {
+        } else if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIRER)) {
             toJID = toAnonymous.split("#")[1];
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
@@ -417,7 +408,7 @@ public class P2PMessageManager {
         newMessage.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(ATTACHMENT);
+        FormField field = new FormField(Constants.ATTACHMENT);
         FormField.Media mediaField = new FormField.Media();
         FormField.Media.Uri uri = new FormField.Media.Uri();
         uri.setValue(attachmentUrl);
@@ -428,7 +419,7 @@ public class P2PMessageManager {
 
         String base64 = BabbleImageProcessorUtil.generateThumbnail(packetId, localUrl,
                 mimeType);
-        FormField thumbnailField = new FormField(THUMBNAIL);
+        FormField thumbnailField = new FormField(Constants.THUMBNAIL);
         thumbnailField.addValue(base64);
         form.addField(thumbnailField);
 
@@ -445,15 +436,13 @@ public class P2PMessageManager {
     /**
      * method to send a type chat message  with audio from the actual IMMessageManager
      *
-     * @param packetId  The packet id to be assigned in the message stanza. If this is null,
-     *                  a new packet id will be generated else, the passed value is used and
-     *                  will be treated as resending the message
-     * @param toJID     The real JID of the recipient (+MSISDN@babbleim.com)
-     * @param timestamp The phone system timestamp. NOT the last server time.
+     * @param packetId The packet id to be assigned in the message stanza. If this is null,
+     *                 a new packet id will be generated else, the passed value is used and
+     *                 will be treated as resending the message
+     * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendAudioAttachment(String packetId, String attachmentUrl,
-                                    String localUrl, String toJID, String timestamp,
+    public void sendAudioAttachment(String packetId, String attachmentUrl, String toJID,
                                     String mimeType) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -466,7 +455,7 @@ public class P2PMessageManager {
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(ATTACHMENT);
+        FormField field = new FormField(Constants.ATTACHMENT);
         FormField.Media mediaField = new FormField.Media();
         FormField.Media.Uri uri = new FormField.Media.Uri();
         uri.setValue(attachmentUrl);
@@ -494,19 +483,16 @@ public class P2PMessageManager {
      *                      will be treated as resending the message
      * @param attachmentUrl The remote url of the uploaded image, that is to be attached in the
      *                      form field of the message stanza
-     * @param localUrl      The local url of the selected image that was uploaded to the server
      * @param toAnonymous   i.e secret_chat&MSISDN@babbleim.com or secret_chat#MSISDN@babbleim.com
      *                      this will be parsed to get the real JID: MSISDN@babbleim.com,
      *                      but will use the original value as JID when inserting in MessagesTable
      *                      and ConversationsTable
-     * @param timestamp     The phone system timestamp. NOT the last server time.
      * @param nickname
      * @throws android.os.RemoteException
      */
     public void sendAudioAttachmentAnonymously(String packetId,
-                                               String attachmentUrl, String localUrl,
+                                               String attachmentUrl,
                                                String toAnonymous,
-                                               String timestamp,
                                                String mimeType, String nickname) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -515,15 +501,12 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setPacketID(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         String toJID = toAnonymous;
-        if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIREE)) {
+        if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIREE)) {
             toJID = toAnonymous.split("&")[1];
             nickname = null;
-        } else if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIRER)) {
+        } else if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIRER)) {
             toJID = toAnonymous.split("#")[1];
         } else if (toJID.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
@@ -538,7 +521,7 @@ public class P2PMessageManager {
         newMessage.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(ATTACHMENT);
+        FormField field = new FormField(Constants.ATTACHMENT);
         FormField.Media mediaField = new FormField.Media();
         FormField.Media.Uri uri = new FormField.Media.Uri();
         uri.setValue(attachmentUrl);
@@ -560,16 +543,14 @@ public class P2PMessageManager {
     /**
      * method to send a type chat message  with location from the actual IMMessageManager
      *
-     * @param packetId  The packet id to be assigned in the message stanza. If this is null,
-     *                  a new packet id will be generated else, the passed value is used and
-     *                  will be treated as resending the message
-     * @param body      Should contain the lat,long of the location to be sent.
-     * @param toJID     The real JID of the recipient (+MSISDN@babbleim.com)
-     * @param timestamp The phone system timestamp. NOT the last server time.
+     * @param packetId The packet id to be assigned in the message stanza. If this is null,
+     *                 a new packet id will be generated else, the passed value is used and
+     *                 will be treated as resending the message
+     * @param body     Should contain the lat,long of the location to be sent.
+     * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendLocationAttachment(String packetId, String body, String toJID,
-                                       String timestamp) {
+    public void sendLocationAttachment(String packetId, String body, String toJID) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -581,7 +562,7 @@ public class P2PMessageManager {
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(LOCATION);
+        FormField field = new FormField(Constants.LOCATION);
         field.addValue(body);
         form.addField(field);
 
@@ -607,12 +588,11 @@ public class P2PMessageManager {
      *                    this will be parsed to get the real JID: MSISDN@babbleim.com,
      *                    but will use the original value as JID when inserting in MessagesTable
      *                    and ConversationsTable
-     * @param timestamp   The phone system timestamp. NOT the last server time.
      * @param nickname
      * @throws android.os.RemoteException
      */
     public void sendLocationAttachmentAnonymously(String packetId, String body,
-                                                  String toAnonymous, String timestamp,
+                                                  String toAnonymous,
                                                   String nickname) {
 
         Message newMessage = new Message();
@@ -622,15 +602,12 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setPacketID(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         String toJID = toAnonymous;
-        if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIREE)) {
+        if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIREE)) {
             toJID = toAnonymous.split("&")[1];
             nickname = null;
-        } else if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIRER)) {
+        } else if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIRER)) {
             toJID = toAnonymous.split("#")[1];
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
@@ -646,7 +623,7 @@ public class P2PMessageManager {
         newMessage.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(LOCATION);
+        FormField field = new FormField(Constants.LOCATION);
         field.addValue(body);
         form.addField(field);
 
@@ -664,15 +641,13 @@ public class P2PMessageManager {
     /**
      * method to send a type chat message  with VCF file contact from the actual IMMessageManager
      *
-     * @param packetId  The packet id to be assigned in the message stanza. If this is null,
-     *                  a new packet id will be generated else, the passed value is used and
-     *                  will be treated as resending the message
-     * @param toJID     The real JID of the recipient (+MSISDN@babbleim.com)
-     * @param timestamp The phone system timestamp. NOT the last server time.
+     * @param packetId The packet id to be assigned in the message stanza. If this is null,
+     *                 a new packet id will be generated else, the passed value is used and
+     *                 will be treated as resending the message
+     * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendVCFAttachment(String packetId, String body, String toJID,
-                                  String timestamp) {
+    public void sendVCFAttachment(String packetId, String body, String toJID) {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -683,12 +658,9 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setPacketID(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(VCARD);
+        FormField field = new FormField(Constants.VCARD);
         field.addValue(body);
         form.addField(field);
 
@@ -706,15 +678,13 @@ public class P2PMessageManager {
     /**
      * method to send a type secret message  with VCF file contact from the actual IMMessageManager
      *
-     * @param packetId  The packet id to be assigned in the message stanza. If this is null,
-     *                  a new packet id will be generated else, the passed value is used and
-     *                  will be treated as resending the message
-     * @param toJID     The real JID of the recipient (+MSISDN@babbleim.com)
-     * @param timestamp The phone system timestamp. NOT the last server time.
+     * @param packetId The packet id to be assigned in the message stanza. If this is null,
+     *                 a new packet id will be generated else, the passed value is used and
+     *                 will be treated as resending the message
+     * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendSecretVCFAttachment(String packetId, String body, String toJID,
-                                        String timestamp) {
+    public void sendSecretVCFAttachment(String packetId, String body, String toJID) {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -725,12 +695,9 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setPacketID(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(VCARD);
+        FormField field = new FormField(Constants.VCARD);
         field.addValue(body);
         form.addField(field);
 
@@ -756,13 +723,11 @@ public class P2PMessageManager {
      *                    this will be parsed to get the real JID: MSISDN@babbleim.com,
      *                    but will use the original value as JID when inserting in MessagesTable
      *                    and ConversationsTable
-     * @param timestamp   The phone system timestamp. NOT the last server time.
      * @param nickname
      * @throws android.os.RemoteException
      */
     public void sendVCFAttachmentAnonymously(String packetId, String body,
-                                             String toAnonymous, String timestamp,
-                                             String nickname) {
+                                             String toAnonymous, String nickname) {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -771,15 +736,12 @@ public class P2PMessageManager {
         if (packetId != null) {
             newMessage.setPacketID(packetId);
         }
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
 
         String toJID = toAnonymous;
-        if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIREE)) {
+        if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIREE)) {
             toJID = toAnonymous.split("&")[1];
             nickname = null;
-        } else if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIRER)) {
+        } else if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIRER)) {
             toJID = toAnonymous.split("#")[1];
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
@@ -795,7 +757,7 @@ public class P2PMessageManager {
         newMessage.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(VCARD);
+        FormField field = new FormField(Constants.VCARD);
         field.addValue(body);
         form.addField(field);
 
@@ -812,10 +774,10 @@ public class P2PMessageManager {
     public void sendChatState(String to, String nickname, int chatState)
             throws RemoteException {
 
-        if (to.contains(JID_SECRET_CHAT_ADMIRER)) {
-            to = to.split(JID_SECRET_CHAT_ADMIRER)[1];
-        } else if (to.contains(JID_SECRET_CHAT_ADMIREE)) {
-            to = to.split(JID_SECRET_CHAT_ADMIREE)[1];
+        if (to.contains(Constants.JID_SECRET_CHAT_ADMIRER)) {
+            to = to.split(Constants.JID_SECRET_CHAT_ADMIRER)[1];
+        } else if (to.contains(Constants.JID_SECRET_CHAT_ADMIREE)) {
+            to = to.split(Constants.JID_SECRET_CHAT_ADMIREE)[1];
         }
 
         if (xmpptcpConnection.isConnected() && xmpptcpConnection.isAuthenticated()) {
@@ -833,7 +795,7 @@ public class P2PMessageManager {
             }
             ChatState rChatState;
             switch (chatState) {
-                case CHAT_STATE_COMPOSING: {
+                case Constants.CHAT_STATE_COMPOSING: {
                     rChatState = ChatState.composing;
                 }
                 break;
@@ -896,7 +858,7 @@ public class P2PMessageManager {
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(STICKER);
+        FormField field = new FormField(Constants.STICKER);
         field.addValue(body);
         form.addField(field);
 
@@ -921,12 +883,11 @@ public class P2PMessageManager {
      *                    this will be parsed to get the real JID: MSISDN@babbleim.com,
      *                    but will use the original value as JID when inserting in MessagesTable
      *                    and ConversationsTable
-     * @param timestamp   The phone system timestamp. NOT the last server time.
      * @param nickname
      * @throws android.os.RemoteException
      */
-    public void sendStickerAnonymously(String packetId, String body, String toAnonymous,
-                                       String mimeType, String timestamp, String nickname)
+    public void sendStickerAnonymously(String packetId, String body, String toAnonymous, String
+            nickname)
             throws RemoteException {
 
         Message newMessage = new Message();
@@ -937,15 +898,11 @@ public class P2PMessageManager {
             newMessage.setPacketID(packetId);
         }
 
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
-
         String toJID = toAnonymous;
-        if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIREE)) {
+        if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIREE)) {
             toJID = toAnonymous.split("&")[1];
             nickname = null;
-        } else if (toAnonymous.startsWith(JID_SECRET_CHAT_ADMIRER)) {
+        } else if (toAnonymous.startsWith(Constants.JID_SECRET_CHAT_ADMIRER)) {
             toJID = toAnonymous.split("#")[1];
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
@@ -961,7 +918,7 @@ public class P2PMessageManager {
         newMessage.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
-        FormField field = new FormField(STICKER);
+        FormField field = new FormField(Constants.STICKER);
         field.addValue(body);
         form.addField(field);
 

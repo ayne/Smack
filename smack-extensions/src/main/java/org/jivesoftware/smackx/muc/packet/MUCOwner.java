@@ -42,6 +42,14 @@ public class MUCOwner extends IQ {
     }
 
     /**
+     * For Babbble to enabling setting of #vgc namespace
+     * @param namespace
+     */
+    public MUCOwner(String namespace){
+        super(ELEMENT, namespace);
+    }
+
+    /**
      * Returns a List of item childs that holds information about affiliation,
      * jids and nicks.
      * 

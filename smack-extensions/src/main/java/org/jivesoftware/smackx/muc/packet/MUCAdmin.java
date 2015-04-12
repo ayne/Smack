@@ -16,11 +16,11 @@
  */
 
 package org.jivesoftware.smackx.muc.packet;
+import org.jivesoftware.smack.packet.IQ;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.jivesoftware.smack.packet.IQ;
 
 /**
  * IQ stanza(/packet) that serves for kicking users, granting and revoking voice, banning users, 
@@ -39,6 +39,14 @@ public class MUCAdmin extends IQ {
 
     public MUCAdmin() {
         super(ELEMENT, NAMESPACE);
+    }
+
+    /**
+     * Babble modififcation to add vgc owner namespace
+     * @param namespace
+     */
+    public MUCAdmin(String namespace){
+        super(ELEMENT, namespace);
     }
 
     /**

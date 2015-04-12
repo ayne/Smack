@@ -28,7 +28,8 @@ public enum MUCRole {
     moderator,
     none,
     participant,
-    visitor;
+    visitor,
+    member; //"member" addition for Babble vgc
 
     public static MUCRole fromString(String string) {
         if (string == null) {

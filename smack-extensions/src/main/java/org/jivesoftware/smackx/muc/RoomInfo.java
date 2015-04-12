@@ -17,15 +17,15 @@
 
 package org.jivesoftware.smackx.muc;
 
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.xdata.Form;
+import org.jivesoftware.smackx.xdata.FormField;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
-import org.jivesoftware.smackx.xdata.Form;
-import org.jivesoftware.smackx.xdata.FormField;
 
 /**
  * Represents the room information that was discovered using Service Discovery. It's possible to
@@ -127,6 +127,11 @@ public class RoomInfo {
      */
     private final Form form;
 
+    /**
+     * The subject of a vgc group.
+     */
+    private final String vgc_subject;
+
     RoomInfo(DiscoverInfo info) {
         this.room = info.getFrom();
         // Get the information based on the discovered features
@@ -146,6 +151,7 @@ public class RoomInfo {
             this.name = "";
         }
         String subject = "";
+        String vgc_subject = "";
         int occupantsCount = -1;
         String description = "";
         int maxhistoryfetch = -1;
@@ -167,6 +173,12 @@ public class RoomInfo {
             FormField subjField = form.getField("muc#roominfo_subject");
             if (subjField != null && !subjField.getValues().isEmpty()) {
                 subject = subjField.getValues().get(0);
+            }
+
+            //For Babble vgc subject
+            FormField vgcSubjField = form.getField("vgc#roomname");
+            if (vgcSubjField != null && !vgcSubjField.getValues().isEmpty()) {
+                vgc_subject = vgcSubjField.getValues().get(0);
             }
 
             FormField occCountField = form.getField("muc#roominfo_occupants");
@@ -218,6 +230,7 @@ public class RoomInfo {
         }
         this.description = description;
         this.subject = subject;
+        this.vgc_subject = vgc_subject;
         this.occupantsCount = occupantsCount;
         this.maxhistoryfetch = maxhistoryfetch;
         this.contactJid = contactJid;
@@ -271,6 +284,16 @@ public class RoomInfo {
      */
     public String getSubject() {
         return subject;
+    }
+
+    /**
+     * Returns the discovered subject of the vgc room. The subject may be null if the room does not
+     * have a subject.
+     *
+     * @return the discovered subject of the room or null
+     */
+    public String getVGCSubject() {
+        return vgc_subject;
     }
 
     /**

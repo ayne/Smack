@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketCollector;
+import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.PresenceListener;
 import org.jivesoftware.smack.SmackException;
@@ -47,8 +48,10 @@ import org.jivesoftware.smack.filter.FromMatchesFilter;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.MessageWithSubjectFilter;
 import org.jivesoftware.smack.filter.NotFilter;
+import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaExtensionFilter;
+import org.jivesoftware.smack.filter.StanzaIdFilter;
 import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.filter.ToFilter;
 import org.jivesoftware.smack.packet.IQ;
@@ -558,6 +561,26 @@ public class MultiUserChat {
      */
     public void sendConfigurationForm(Form form) throws NoResponseException, XMPPErrorException, NotConnectedException {
         MUCOwner iq = new MUCOwner();
+        iq.setTo(room);
+        iq.setType(IQ.Type.set);
+        iq.addExtension(form.getDataFormToSend());
+
+        connection.createPacketCollectorAndSend(iq).nextResultOrThrow();
+    }
+
+    /**
+     * Babble modification to support sending of #vgc namespace.
+     * Sends the completed configuration form to the server. The room will be configured
+     * with the new settings defined in the form. If the form is empty then the server
+     * will create an instant room (will use default configuration).
+     *
+     * @param form the form with the new settings.
+     * @throws XMPPErrorException if an error occurs setting the new rooms' configuration.
+     * @throws NoResponseException if there was no response from the server.
+     * @throws NotConnectedException
+     */
+    public void sendConfigurationForm(Form form, String namespace) throws NoResponseException, XMPPErrorException, NotConnectedException {
+        MUCOwner iq = new MUCOwner(namespace);
         iq.setTo(room);
         iq.setType(IQ.Type.set);
         iq.addExtension(form.getDataFormToSend());
@@ -1602,6 +1625,15 @@ public class MultiUserChat {
     }
 
     /**
+     * Babble modification to send a message of type vgc
+     * @param type
+     * @return
+     */
+    public Message createMessage(Message.Type type){
+        return new Message(room, type);
+    }
+
+    /**
      * Sends a Message to the chat room.
      *
      * @param message the message.
@@ -1703,6 +1735,35 @@ public class MultiUserChat {
      */
     public void changeSubject(final String subject) throws NoResponseException, XMPPErrorException, NotConnectedException {
         Message message = createMessage();
+        message.setSubject(subject);
+        // Wait for an error or confirmation message back from the server.
+        StanzaFilter responseFilter = new AndFilter(fromRoomGroupchatFilter, new StanzaFilter() {
+            @Override
+            public boolean accept(Stanza packet) {
+                Message msg = (Message) packet;
+                return subject.equals(msg.getSubject());
+            }
+        });
+        PacketCollector response = connection.createPacketCollectorAndSend(responseFilter, message);
+        // Wait up to a certain number of seconds for a reply.
+        response.nextResultOrThrow();
+    }
+
+
+    /**
+     * Babble modification to modify vgc subject.
+     * Changes the subject within the room. As a default, only users with a role of "moderator"
+     * are allowed to change the subject in a room. Although some rooms may be configured to
+     * allow a mere participant or even a visitor to change the subject.
+     *
+     * @param subject the new room's subject to set.
+     * @throws XMPPErrorException if someone without appropriate privileges attempts to change the
+     *          room subject will throw an error with code 403 (i.e. Forbidden)
+     * @throws NoResponseException if there was no response from the server.
+     * @throws NotConnectedException
+     */
+    public void changeSubject(final String subject, Message.Type type) throws NoResponseException, XMPPErrorException, NotConnectedException {
+        Message message = createMessage(type);
         message.setSubject(subject);
         // Wait for an error or confirmation message back from the server.
         StanzaFilter responseFilter = new AndFilter(fromRoomGroupchatFilter, new StanzaFilter() {
