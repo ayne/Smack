@@ -469,6 +469,11 @@ public final class Message extends Stanza implements TypedCloneable<Message> {
         this.ts = time;
     }
 
+
+    /**
+     * Babble method to get the server timestamp of a message
+     * @return
+     */
     public String getTS(){
         return this.ts;
     }

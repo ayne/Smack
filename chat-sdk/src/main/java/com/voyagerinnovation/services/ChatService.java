@@ -3,9 +3,7 @@ package com.voyagerinnovation.services;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 
 import com.voyagerinnovation.environment.Environment;
 import com.voyagerinnovation.services.managers.P2PMessageManager;
@@ -58,14 +56,6 @@ public class ChatService extends Service implements ConnectionListener,
         }
     }
 
-
-    private static class ChatServiceHandler extends Handler {
-        @Override
-        public void handleMessage(Message message) {
-
-        }
-    }
-
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -75,7 +65,6 @@ public class ChatService extends Service implements ConnectionListener,
     public int onStartCommand(Intent intent, int flags, int startId) {
         return Service.START_STICKY;
     }
-
 
     @Override
     public void onCreate() {
@@ -272,6 +261,7 @@ public class ChatService extends Service implements ConnectionListener,
         if (packet instanceof ArchiveResultIQ) {
             Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
         }
+
     }
 
 
