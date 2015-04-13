@@ -7,6 +7,7 @@ import android.os.IBinder;
 
 import com.voyagerinnovation.environment.Environment;
 import com.voyagerinnovation.services.managers.P2PMessageManager;
+import com.voyagerinnovation.services.parsers.StanzaParser;
 import com.voyagerinnovation.smack.security.authentication.DummySSLSocketFactory;
 import com.voyagerinnovation.smack.security.authentication.XYAPTokenMechanism;
 
@@ -21,7 +22,6 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.ArchiveIQ;
 import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.sasl.SASLMechanism;
@@ -40,7 +40,7 @@ import timber.log.Timber;
  * Service that handles connection to XMPP server as well as parsing of incoming stanzas.
  * Created by charmanesantiago on 3/25/15.
  */
-public class ChatService extends Service implements ConnectionListener,
+public  class ChatService extends Service implements ConnectionListener,
         StanzaListener, StanzaFilter {
 
 
@@ -49,6 +49,7 @@ public class ChatService extends Service implements ConnectionListener,
     private String yapToken;
     private String tts;
     private P2PMessageManager p2PMessageManager;
+    private ChatReceivedListener chatReceivedListener;
 
     public class LocalBinder extends Binder {
         public ChatService getService() {
@@ -258,10 +259,13 @@ public class ChatService extends Service implements ConnectionListener,
     @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
         Timber.d("Stanza " + packet.toXML().toString());
-        if (packet instanceof ArchiveResultIQ) {
-            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
-        }
+//        if (packet instanceof ArchiveResultIQ) {
+//            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
+//        }
 
+        if(chatReceivedListener != null){
+            StanzaParser.processPacket(packet, chatReceivedListener);
+        }
     }
 
 
