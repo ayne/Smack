@@ -36,7 +36,8 @@ public class StanzaParser {
      *
      * @param packet
      */
-    public static void processPacket(Stanza packet, ChatReceivedListener chatReceivedListener) {
+    public static void processPacket(Stanza packet, XMPPTCPConnection xmpptcpConnection,
+                                     ChatReceivedListener chatReceivedListener) {
         if (packet instanceof Presence) {
             //TODO process presence
         } else if (packet instanceof Message) {
@@ -45,31 +46,32 @@ public class StanzaParser {
 
             if (messagePacket.getBody() == null
                     && messagePacket.getExtension(Constants.JABBERXEVENT) != null) {
-                //TODO process Event
+                chatReceivedListener.onEventReceived(messagePacket);
             }
 
             if (messagePacket.getExtension(Constants.JABBERXCONFERENCE) != null) {
-                //TODO process VGC Invite
+                chatReceivedListener.onVGCInvitationReceived(messagePacket);
             }
 
             if (messagePacket.getExtension(Constants.JABBERXDATA) != null) {
                 // Process Message Attachment
-                //TODO identifyMessagePacket(connection, messagePacket, false);
+                identifyMessagePacket(messagePacket, xmpptcpConnection, chatReceivedListener, false);
+
             } else if (!TextUtils.isEmpty(messagePacket.getSubject())) {
                 // Process VGC Subject Change
-//                TODO VGCParser.processGroupSubjectChangePacket(context, messagePacket,
-//                        multiUserChatManager);
+                chatReceivedListener.onVGCSubjectChanged(messagePacket);
+
             } else if (messagePacket.getBody().trim().length() == 0) {
                 // Process Chat State Notification
-//                TODO P2PParser.processChatStateNotification(context, messagePacket,
-//                        messageManager);
+                chatReceivedListener.onChatStateReceived(messagePacket);
             } else {
-                //TODO identifyMessagePacket(connection, messagePacket, false);
+                identifyMessagePacket(messagePacket, xmpptcpConnection, chatReceivedListener, false);
             }
 
         } else if (packet instanceof ArchiveResultIQ) {
             //TODO
             Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
+            chatReceivedListener.onArchiveResultReceived((ArchiveResultIQ)packet);
 //            String endpoint = iq.getEndpoint();
 //            String count = iq.getCount();
 //
@@ -98,7 +100,7 @@ public class StanzaParser {
             Route route = (Route) packet;
             Message message = route.getMessage();
             if (Message.Type.vgc.equals(message.getType())) {
-                processPacket(message, chatReceivedListener);
+                processPacket(message, xmpptcpConnection, chatReceivedListener);
             } else if (Message.Type.secret.equals(message.getType())) {
                 //Ignore. Since this is a secret (ticking) message
                 //and history must not be recovered.
@@ -108,7 +110,7 @@ public class StanzaParser {
                 if (to != null && to.contains(Environment.IM_CHATROOM_SUFFIX)) {
                     Timber.w("private msg from chatroom archive recovered but ignored");
                 } else {
-                    //TODO identifyMessagePacket(connection, message, true);
+                    identifyMessagePacket(message, xmpptcpConnection, chatReceivedListener, true);
                 }
             }
         }
@@ -123,7 +125,7 @@ public class StanzaParser {
      * @param messagePacket
      * @param isRoute
      */
-    private void identifyMessagePacket(Message messagePacket, XMPPTCPConnection xmpptcpConnection,
+    private static void identifyMessagePacket(Message messagePacket, XMPPTCPConnection xmpptcpConnection,
                                        ChatReceivedListener chatReceivedListener, boolean isRoute) {
 
         String from[] = messagePacket.getFrom().split("/");
@@ -191,7 +193,7 @@ public class StanzaParser {
      * @param messagePacket
      * @param field
      */
-    private void processFileThumbnail(Message messagePacket, FormField field) {
+    private static void processFileThumbnail(Message messagePacket, FormField field) {
 
         for (String value : field.getValues()) {
             byte[] decodedString = Base64.decode(value, Base64.DEFAULT);
@@ -205,7 +207,7 @@ public class StanzaParser {
     }
 
 
-    public void processFileAttachment(Message messagePacket, ChatReceivedListener
+    public static void processFileAttachment(Message messagePacket, ChatReceivedListener
             chatReceivedListener,
                                       boolean isRoute) {
 
@@ -218,7 +220,7 @@ public class StanzaParser {
         } else if (messagePacket.getType() == Message.Type.secret_vgc) {
             chatReceivedListener.onAnonymousVGCChatFileReceived(messagePacket, isRoute);
         } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatFileReceived(messagePacket, isRoute);
+            chatReceivedListener.onPublicChatFileReceived(messagePacket);
         } else if (messagePacket.getType() == Message.Type.secret) {
             chatReceivedListener.onSecretChatFileReceived(messagePacket, isRoute);
         }
@@ -226,7 +228,7 @@ public class StanzaParser {
     }
 
 
-    private void processVCardAttachment(Message messagePacket,
+    private static void processVCardAttachment(Message messagePacket,
                                         ChatReceivedListener chatReceivedListener, boolean
                                                 isRoute) {
         if (messagePacket.getType() == Message.Type.chat) {
@@ -242,12 +244,12 @@ public class StanzaParser {
         } else if (messagePacket.getType() == Message.Type.secret_vgc) {
             chatReceivedListener.onAnonymousVGCChatVCFReceived(messagePacket, isRoute);
         } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatReceived(messagePacket);
+            chatReceivedListener.onPublicChatVCFReceived(messagePacket);
         }
 
     }
 
-    public void processLocationAttachment(Message messagePacket, ChatReceivedListener
+    public static void processLocationAttachment(Message messagePacket, ChatReceivedListener
             chatReceivedListener,
                                           boolean isRoute) {
 
@@ -260,14 +262,14 @@ public class StanzaParser {
         } else if (messagePacket.getType() == Message.Type.secret_vgc) {
             chatReceivedListener.onAnonymousVGCChatLocationReceived(messagePacket, isRoute);
         } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatLocationReceived(messagePacket, isRoute);
+            chatReceivedListener.onPublicChatLocationReceived(messagePacket);
         } else if (messagePacket.getType() == Message.Type.secret) {
             chatReceivedListener.onSecretChatLocationReceived(messagePacket, isRoute);
         }
 
     }
 
-    public void processStickerAttachment(Message messagePacket, ChatReceivedListener
+    public static void processStickerAttachment(Message messagePacket, ChatReceivedListener
             chatReceivedListener, boolean isRoute) {
 
         if (messagePacket.getType() == Message.Type.chat) {
@@ -277,7 +279,7 @@ public class StanzaParser {
         } else if (messagePacket.getType() == Message.Type.secret_vgc) {
             chatReceivedListener.onAnonymousVGCChatStickerReceived(messagePacket, isRoute);
         } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatStickerReceived(messagePacket, isRoute);
+            chatReceivedListener.onPublicChatStickerReceived(messagePacket);
         } else if (messagePacket.getType() == Message.Type.secret_chat) {
             chatReceivedListener.onAnonymousChatStickerReceived(messagePacket, isRoute);
         } else if (messagePacket.getType() == Message.Type.secret) {
@@ -287,7 +289,7 @@ public class StanzaParser {
     }
 
 
-    public void processPlainMessage(Message message, ChatReceivedListener chatReceivedListener,
+    public static void processPlainMessage(Message message, ChatReceivedListener chatReceivedListener,
                                     boolean isRoute) {
 
         if (message.getType() == Message.Type.chat) {

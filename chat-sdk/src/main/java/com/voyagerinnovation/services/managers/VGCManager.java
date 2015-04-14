@@ -110,7 +110,7 @@ public class VGCManager {
         Message groupMessage = new Message(groupJID, Message.Type.vgc);
         insertMsisdnAndNameIntoMessageIfHasSkey(groupMessage);
         if (packetId != null) {
-            groupMessage.setPacketID(packetId);
+            groupMessage.setStanzaId(packetId);
         }
         groupMessage.setBody(message);
 

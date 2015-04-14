@@ -44,11 +44,11 @@ public  class ChatService extends Service implements ConnectionListener,
         StanzaListener, StanzaFilter {
 
 
-    private XMPPTCPConnection xmpptcpConnection;
+    public XMPPTCPConnection xmpptcpConnection;
     private final IBinder mBinder = new LocalBinder();
     private String yapToken;
     private String tts;
-    private P2PMessageManager p2PMessageManager;
+    public P2PMessageManager p2PMessageManager;
     private ChatReceivedListener chatReceivedListener;
 
     public class LocalBinder extends Binder {
@@ -129,6 +129,8 @@ public  class ChatService extends Service implements ConnectionListener,
         return this.p2PMessageManager;
     }
 
+    public XMPPTCPConnection getXMPPTCPConnection() { return this.xmpptcpConnection; }
+
     /**
      * Method to login to Babble using jid and password
      *
@@ -204,6 +206,9 @@ public  class ChatService extends Service implements ConnectionListener,
      * if previous connection state was logged (authenticated).
      */
     public void connect() {
+        if(chatReceivedListener != null){
+            chatReceivedListener.onConnecting();
+        }
         new Thread() {
             @Override
             public void run() {
@@ -256,6 +261,11 @@ public  class ChatService extends Service implements ConnectionListener,
         return true;
     }
 
+
+    public void setOnChatReceivedListener(ChatReceivedListener chatReceivedListener){
+        this.chatReceivedListener = chatReceivedListener;
+    }
+
     @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
         Timber.d("Stanza " + packet.toXML().toString());
@@ -264,7 +274,7 @@ public  class ChatService extends Service implements ConnectionListener,
 //        }
 
         if(chatReceivedListener != null){
-            StanzaParser.processPacket(packet, chatReceivedListener);
+            StanzaParser.processPacket(packet, xmpptcpConnection, chatReceivedListener);
         }
     }
 
@@ -272,6 +282,9 @@ public  class ChatService extends Service implements ConnectionListener,
     @Override
     public void connected(final XMPPConnection connection) {
         Timber.d("Connected");
+        if(chatReceivedListener != null){
+            chatReceivedListener.onConnected(connection);
+        }
         new Thread() {
             @Override
             public void run() {
