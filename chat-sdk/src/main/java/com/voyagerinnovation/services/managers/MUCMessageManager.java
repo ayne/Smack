@@ -23,11 +23,11 @@ import java.util.Set;
 /**
  * Created by charmanesantiago on 4/14/15.
  */
-public class MUCManager {
+public class MUCMessageManager {
 
     XMPPTCPConnection xmpptcpConnection;
 
-    public MUCManager(XMPPTCPConnection xmpptcpConnection) {
+    public MUCMessageManager(XMPPTCPConnection xmpptcpConnection) {
         this.xmpptcpConnection = xmpptcpConnection;
     }
 
@@ -196,8 +196,7 @@ public class MUCManager {
     }
 
     public void sendAudioAttachment(String packetId, String attachmentUrl,
-                                    String localUrl, String chatroomJID, String mimeType, String
-                                            timestamp)
+                                    String chatroomJID, String mimeType)
             throws RemoteException {
 
         Message newMessage = new Message();
@@ -235,7 +234,7 @@ public class MUCManager {
     }
 
     public void sendLocationAttachment(String packetId, String body,
-                                       String chatroomJID, String timestamp) throws
+                                       String chatroomJID) throws
             RemoteException {
 
         Message newMessage = new Message();
@@ -268,7 +267,7 @@ public class MUCManager {
     }
 
     public void sendVCFAttachment(String packetId, String body,
-                                  String chatroomJID, String timestamp) throws RemoteException {
+                                  String chatroomJID) throws RemoteException {
 
         Message newMessage = new Message();
 

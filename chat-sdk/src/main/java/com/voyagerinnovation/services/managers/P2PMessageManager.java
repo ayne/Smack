@@ -840,8 +840,7 @@ public class P2PMessageManager {
     }
 
 
-    public void sendSticker(String packetId, String body, String to,
-                            String mimeType, String timestamp) throws RemoteException {
+    public void sendSticker(String packetId, String body, String to) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -851,10 +850,6 @@ public class P2PMessageManager {
 
         if (packetId != null) {
             newMessage.setPacketID(packetId);
-        }
-
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
         }
 
         DataForm form = new DataForm(DataForm.Type.form);

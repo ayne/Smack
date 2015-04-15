@@ -24,4 +24,6 @@ public class Constants {
     public final static int CHAT_STATE_PAUSED = 2;
 
     public final static String IMMULTIUSERCHAT_CREATE_ROOM_ERROR_SPIEL = "Cannot Create Room!";
+
+    public final static String MESSAGE_BODY_SECRET = "secret";
 }

@@ -34,11 +34,11 @@ import timber.log.Timber;
 /**
  * Created by charmanesantiago on 4/12/15.
  */
-public class VGCManager {
+public class VGCMessageManager {
 
     XMPPTCPConnection xmpptcpConnection;
 
-    public VGCManager(XMPPTCPConnection xmpptcpConnection) {
+    public VGCMessageManager(XMPPTCPConnection xmpptcpConnection) {
         this.xmpptcpConnection = xmpptcpConnection;
     }
 
@@ -445,7 +445,7 @@ public class VGCManager {
      * @param mimeType
      */
     public void sendAudioAttachment(String packetId, String attachmentUrl,
-                                    String localUrl, String groupJID, String mimeType) {
+                                     String groupJID, String mimeType) {
 
         Message newMessage = new Message();
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);

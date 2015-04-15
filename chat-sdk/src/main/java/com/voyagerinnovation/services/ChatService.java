@@ -6,7 +6,9 @@ import android.os.Binder;
 import android.os.IBinder;
 
 import com.voyagerinnovation.environment.Environment;
+import com.voyagerinnovation.services.managers.MUCMessageManager;
 import com.voyagerinnovation.services.managers.P2PMessageManager;
+import com.voyagerinnovation.services.managers.VGCMessageManager;
 import com.voyagerinnovation.services.parsers.StanzaParser;
 import com.voyagerinnovation.smack.security.authentication.DummySSLSocketFactory;
 import com.voyagerinnovation.smack.security.authentication.XYAPTokenMechanism;
@@ -49,7 +51,10 @@ public  class ChatService extends Service implements ConnectionListener,
     private String yapToken;
     private String tts;
     public P2PMessageManager p2PMessageManager;
+    public VGCMessageManager vgcMessageManager;
+    public MUCMessageManager mucMessageManager;
     private ChatReceivedListener chatReceivedListener;
+
 
     public class LocalBinder extends Binder {
         public ChatService getService() {
@@ -122,6 +127,8 @@ public  class ChatService extends Service implements ConnectionListener,
         SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(null));
 
         p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
+        vgcMessageManager = new VGCMessageManager(xmpptcpConnection);
+        mucMessageManager = new MUCMessageManager(xmpptcpConnection);
 
     }
 

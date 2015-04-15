@@ -3,11 +3,13 @@ package com.voyagerinnovation.services;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
+import org.jivesoftware.smackx.xdata.FormField;
 
 /**
  * Created by charmanesantiago on 4/13/15.
  */
 public interface ChatReceivedListener {
+
 
 
     public void onConnecting();
@@ -22,11 +24,14 @@ public interface ChatReceivedListener {
 
     public void onAuthenticationFailed();
 
+    //Represents receiving a message packet with ts (server time)
+    public void onTsReceived(String source, String servertime);
+
     public void onChatReceived(Message message, boolean isRoute);
 
-    public void onChatFileReceived(Message message, boolean isRoute);
+    public void onChatFileReceived(Message message, FormField formField, boolean isRoute);
 
-    public void onChatVCFReceived(Message message, boolean isRoute);
+    public void onChatVCFReceived(Message message, FormField formField, boolean isRoute);
 
     public void onChatLocationReceived(Message message, boolean isRoute);
 
@@ -35,9 +40,9 @@ public interface ChatReceivedListener {
 
     public void onSecretChatReceived(Message message, boolean isRoute);
 
-    public void onSecretChatFileReceived(Message message, boolean isRoute);
+    public void onSecretChatFileReceived(Message message, FormField formField, boolean isRoute);
 
-    public void onSecretChatVCFReceived(Message message, boolean isRoute);
+    public void onSecretChatVCFReceived(Message message, FormField formField, boolean isRoute);
 
     public void onSecretChatLocationReceived(Message message, boolean isRoute);
 
@@ -46,9 +51,9 @@ public interface ChatReceivedListener {
 
     public void onAnonymousChatReceived(Message message, boolean isRoute);
 
-    public void onAnonymousChatFileReceived(Message message, boolean isRoute);
+    public void onAnonymousChatFileReceived(Message message, FormField formField, boolean isRoute);
 
-    public void onAnonymousChatVCFReceived(Message message, boolean isRoute);
+    public void onAnonymousChatVCFReceived(Message message, FormField formField, boolean isRoute);
 
     public void onAnonymousChatLocationReceived(Message message, boolean isRoute);
 
@@ -57,9 +62,9 @@ public interface ChatReceivedListener {
 
     public void onVGCChatReceived(Message message, boolean isRoute);
 
-    public void onVGCChatFileReceived(Message message, boolean isRoute);
+    public void onVGCChatFileReceived(Message message, FormField formField, boolean isRoute);
 
-    public void onVGCChatVCFReceived(Message message, boolean isRoute);
+    public void onVGCChatVCFReceived(Message message, FormField formField, boolean isRoute);
 
     public void onVGCChatLocationReceived(Message message, boolean isRoute);
 
@@ -71,9 +76,9 @@ public interface ChatReceivedListener {
 
     public void onAnonymousVGCChatReceived(Message message, boolean isRoute);
 
-    public void onAnonymousVGCChatFileReceived(Message message, boolean isRoute);
+    public void onAnonymousVGCChatFileReceived(Message message, FormField formField, boolean isRoute);
 
-    public void onAnonymousVGCChatVCFReceived(Message message, boolean isRoute);
+    public void onAnonymousVGCChatVCFReceived(Message message, FormField formField, boolean isRoute);
 
     public void onAnonymousVGCChatLocationReceived(Message message, boolean isRoute);
 
@@ -82,9 +87,9 @@ public interface ChatReceivedListener {
 
     public void onPublicChatReceived(Message message);
 
-    public void onPublicChatFileReceived(Message message);
+    public void onPublicChatFileReceived(Message message, FormField formField);
 
-    public void onPublicChatVCFReceived(Message message);
+    public void onPublicChatVCFReceived(Message message, FormField formField);
 
     public void onPublicChatLocationReceived(Message message);
 
