@@ -535,7 +535,7 @@ public class VGCMessageManager {
      * @param body
      * @param groupJID
      */
-    public void sendVCFAttachment(String packetId, String body, String groupJID) {
+    public void sendVCFAttachment(String packetId, String body, String groupJID) throws RemoteException{
 
         Message newMessage = new Message();
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -571,7 +571,7 @@ public class VGCMessageManager {
      * @param groupJID
      */
     public void sendVCFAttachmentAnonymously(String packetId, String body,
-                                             String groupJID, String timestamp, String nickname) {
+                                             String groupJID, String timestamp, String nickname) throws  RemoteException{
 
 
         Message newMessage = new Message();
@@ -616,7 +616,7 @@ public class VGCMessageManager {
      * @param body
      * @param groupJID
      */
-    public void sendLocationAttachment(String packetId, String body, String groupJID) {
+    public void sendLocationAttachment(String packetId, String body, String groupJID) throws RemoteException {
 
         Message newMessage = new Message();
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -653,7 +653,7 @@ public class VGCMessageManager {
      */
     public void sendLocationAttachmentAnonymously(String packetId, String body,
                                                   String groupJID, String timestamp,
-                                                  String nickname) {
+                                                  String nickname) throws RemoteException{
 
         Message newMessage = new Message();
 
@@ -793,7 +793,7 @@ public class VGCMessageManager {
      * @param subject
      * @return true if group's subject has been successfully changed.
      */
-    public boolean changeSubject(String groupJID, String subject) {
+    public boolean changeSubject(String groupJID, String subject) throws RemoteException{
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);

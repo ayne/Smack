@@ -219,7 +219,7 @@ public class StanzaParser {
                                              boolean isRoute) {
 
         if (messagePacket.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatFileReceived(messagePacket, isRoute);
+            chatReceivedListener.onChatFileReceived(messagePacket, formField, isRoute);
         } else if (messagePacket.getType() == Message.Type.secret_chat) {
             chatReceivedListener.onAnonymousChatFileReceived(messagePacket, formField, isRoute);
         } else if (messagePacket.getType() == Message.Type.vgc) {
@@ -262,7 +262,7 @@ public class StanzaParser {
                                                  boolean isRoute) {
 
         if (messagePacket.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatLocationReceived(messagePacket, isRoute);
+            chatReceivedListener.onChatLocationReceived(messagePacket, formField, isRoute);
         } else if (messagePacket.getType() == Message.Type.secret_chat) {
             chatReceivedListener.onAnonymousChatLocationReceived(messagePacket, formField, isRoute);
         } else if (messagePacket.getType() == Message.Type.vgc) {
@@ -282,7 +282,7 @@ public class StanzaParser {
             chatReceivedListener, boolean isRoute) {
 
         if (messagePacket.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatStickerReceived(messagePacket, isRoute);
+            chatReceivedListener.onChatStickerReceived(messagePacket, formField, isRoute);
         } else if (messagePacket.getType() == Message.Type.vgc) {
             chatReceivedListener.onVGCChatStickerReceived(messagePacket, formField, isRoute);
         } else if (messagePacket.getType() == Message.Type.secret_vgc) {

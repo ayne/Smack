@@ -31,6 +31,17 @@ public class MUCMessageManager {
         this.xmpptcpConnection = xmpptcpConnection;
     }
 
+    public class RoomObject {
+
+        public String jid;
+        public String name;
+
+        RoomObject(String jid, String name) {
+            this.jid = jid;
+            this.name = name;
+        }
+    }
+
     public boolean joinRoom(String nickname, String chatroomJID)
             throws RemoteException {
 

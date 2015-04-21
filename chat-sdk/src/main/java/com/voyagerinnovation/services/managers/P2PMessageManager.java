@@ -135,7 +135,7 @@ public class P2PMessageManager {
      * @param message The body of the message to be sent
      * @param to      The jid that will receive the secret message
      */
-    public void sendSecretMessage(String message, String to) {
+    public void sendSecretMessage(String message, String to) throws RemoteException{
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -244,7 +244,7 @@ public class P2PMessageManager {
      * @param body     the lat lng of the location
      * @param toJID
      */
-    public void sendSecretLocationAttachment(String packetId, String body, String toJID) {
+    public void sendSecretLocationAttachment(String packetId, String body, String toJID) throws RemoteException {
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -550,7 +550,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendLocationAttachment(String packetId, String body, String toJID) {
+    public void sendLocationAttachment(String packetId, String body, String toJID) throws RemoteException {
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -593,7 +593,7 @@ public class P2PMessageManager {
      */
     public void sendLocationAttachmentAnonymously(String packetId, String body,
                                                   String toAnonymous,
-                                                  String nickname) {
+                                                  String nickname) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -647,7 +647,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendVCFAttachment(String packetId, String body, String toJID) {
+    public void sendVCFAttachment(String packetId, String body, String toJID) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -684,7 +684,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendSecretVCFAttachment(String packetId, String body, String toJID) {
+    public void sendSecretVCFAttachment(String packetId, String body, String toJID) throws RemoteException{
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -727,7 +727,7 @@ public class P2PMessageManager {
      * @throws android.os.RemoteException
      */
     public void sendVCFAttachmentAnonymously(String packetId, String body,
-                                             String toAnonymous, String nickname) {
+                                             String toAnonymous, String nickname) throws RemoteException{
 
         Message newMessage = new Message();
         //TODO add similar method with SSO

@@ -136,6 +136,10 @@ public  class ChatService extends Service implements ConnectionListener,
         return this.p2PMessageManager;
     }
 
+    public VGCMessageManager getVgcMessageManager(){ return this.vgcMessageManager; }
+
+    public MUCMessageManager getMucMessageManager(){ return this.mucMessageManager; }
+
     public XMPPTCPConnection getXMPPTCPConnection() { return this.xmpptcpConnection; }
 
     /**
