@@ -26,7 +26,7 @@ public class P2PMessageManager {
         this.xmpptcpConnection = xmpptcpConnection;
     }
 
-    public void sendMessage(String packetId, String message, String toJID) throws RemoteException {
+    public Message sendMessage(String packetId, String message, String toJID) throws RemoteException {
         Message newMessage = new Message();
         if (packetId != null) {
             newMessage.setStanzaId(packetId);
@@ -40,6 +40,7 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+        return newMessage;
     }
 
     /**
@@ -94,7 +95,7 @@ public class P2PMessageManager {
 
         Message newMessage = new Message();
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
         String toJID = toAnonymous;
 
@@ -451,7 +452,7 @@ public class P2PMessageManager {
         newMessage.setType(Message.Type.chat);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
@@ -499,7 +500,7 @@ public class P2PMessageManager {
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         String toJID = toAnonymous;
@@ -600,7 +601,7 @@ public class P2PMessageManager {
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         String toJID = toAnonymous;
@@ -656,7 +657,7 @@ public class P2PMessageManager {
         newMessage.setType(Message.Type.chat);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
@@ -693,7 +694,7 @@ public class P2PMessageManager {
         newMessage.setType(Message.Type.secret);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
@@ -734,7 +735,7 @@ public class P2PMessageManager {
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         String toJID = toAnonymous;
@@ -849,7 +850,7 @@ public class P2PMessageManager {
         newMessage.setType(Message.Type.chat);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
@@ -890,7 +891,7 @@ public class P2PMessageManager {
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         String toJID = toAnonymous;

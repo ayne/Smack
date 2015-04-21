@@ -64,7 +64,7 @@ public class StanzaParser {
                 // Process VGC Subject Change
                 chatReceivedListener.onVGCSubjectChanged(messagePacket);
 
-            } else if (messagePacket.getBody().trim().length() == 0) {
+            } else if (TextUtils.isEmpty(messagePacket.getBody())) {
                 // Process Chat State Notification
                 chatReceivedListener.onChatStateReceived(messagePacket);
             } else {

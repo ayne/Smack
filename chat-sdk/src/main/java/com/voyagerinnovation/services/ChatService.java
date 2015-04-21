@@ -54,6 +54,8 @@ public  class ChatService extends Service implements ConnectionListener,
     public VGCMessageManager vgcMessageManager;
     public MUCMessageManager mucMessageManager;
     private ChatReceivedListener chatReceivedListener;
+    private String jid;
+    private String password;
 
 
     public class LocalBinder extends Binder {
@@ -216,7 +218,9 @@ public  class ChatService extends Service implements ConnectionListener,
      * Method to connect to XMPP server. This method performs an automatic login to the server
      * if previous connection state was logged (authenticated).
      */
-    public void connect() {
+    public void connect(String jid, String password) {
+        this.jid = jid;
+        this.password = password;
         if(chatReceivedListener != null){
             chatReceivedListener.onConnecting();
         }
@@ -259,7 +263,8 @@ public  class ChatService extends Service implements ConnectionListener,
 //        }
         //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
 
-        loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
+        //loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
+        loginPlain(jid, password);
 
 //        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
 //                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
@@ -296,14 +301,18 @@ public  class ChatService extends Service implements ConnectionListener,
         if(chatReceivedListener != null){
             chatReceivedListener.onConnected(connection);
         }
-        new Thread() {
-            @Override
-            public void run() {
-                if (!xmpptcpConnection.isAuthenticated()) {
-                    authenticate();
-                }
-            }
-        }.start();
+
+        if (!xmpptcpConnection.isAuthenticated()) {
+            authenticate();
+        }
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                if (!xmpptcpConnection.isAuthenticated()) {
+//                    authenticate();
+//                }
+//            }
+//        }.start();
 
     }
 

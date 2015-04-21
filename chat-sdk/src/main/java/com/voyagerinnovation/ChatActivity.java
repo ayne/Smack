@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.voyagerinnovation.environment.Environment;
 import com.voyagerinnovation.services.ChatService;
 
 import chat.voyagerinnovation.com.chat.R;
@@ -32,7 +33,7 @@ public abstract class ChatActivity extends ActionBarActivity {
             onChatServiceConnected(name, service);
             mChatService = ((ChatService.LocalBinder) service).getService();
             if(!mChatService.isConnected()){
-                mChatService.connect();
+                mChatService.connect("test1" + Environment.IM_SUFFIX, "vvtest1vv");
             }
             else{
                 if(!mChatService.isAuthenticated()){
@@ -56,7 +57,7 @@ public abstract class ChatActivity extends ActionBarActivity {
         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mChatService.connect();
+                mChatService.connect("test1" + Environment.IM_SUFFIX, "vvtest1vv");
             }
         });
 
