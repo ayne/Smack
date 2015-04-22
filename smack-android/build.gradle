@@ -7,34 +7,45 @@ smack-extensions and smack-experimental."""
 // Note that the test dependencies (junit, …) are inferred from the
 // sourceSet.test of the core subproject
 dependencies {
-	// androidProjects lists all projects that are checked to compile against android.jar
-	// Filter out the optional Smack dependencies from androidProjects
-	androidProjects.findAll {
-		![':smack-tcp', ':smack-extensions', ':smack-experimental', ':smack-bosh'].contains(it.getPath())
-	}.each { project ->
+    // androidProjects lists all projects that are checked to compile against android.jar
+    // Filter out the optional Smack dependencies from androidProjects
+    androidProjects.findAll {
+        ![':smack-tcp', ':smack-extensions', ':smack-experimental', ':smack-bosh'].contains(it.getPath())
+    }.each { project ->
         apply plugin: 'java'
         compile project
-	}
+    }
+
+    apply plugin: 'java'
+
+//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-im:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-sasl-provided:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-resolver-minidns:4.1.0.1'
 }
 
 compileJava {
-	options.bootClasspath = androidBootClasspath
+    options.bootClasspath = androidBootClasspath
 }
 
 // See http://stackoverflow.com/a/2823592/194894
 // TODO this doesn't seem to work right now. But on the other hand it
 // is not really required, just to avoid a javadoc compiler warning
 javadoc {
-	options.linksOffline "http://developer.android.com/reference", androidJavadocOffline
+    options.linksOffline "http://developer.android.com/reference", androidJavadocOffline
 }
 
-configure (androidProjects) {
-	task compileAndroid(type: JavaCompile) {
-		source = compileJava.source
-		classpath = compileJava.classpath
-		destinationDir = new File(buildDir, 'android')
-		options.bootClasspath = androidBootClasspath
-	}
+configure(androidProjects) {
+    task compileAndroid(type: JavaCompile) {
+        source = compileJava.source
+        classpath = compileJava.classpath
+        destinationDir = new File(buildDir, 'android')
+        options.bootClasspath = androidBootClasspath
+    }
 }
 
-test { dependsOn androidProjects*.compileAndroid }
+test {
+    dependsOn androidProjects*.compileAndroid
+}
+
+apply from: '../smack-push.gradle'

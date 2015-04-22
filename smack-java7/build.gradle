@@ -13,16 +13,22 @@ dependencies to smack-tcp, smack-extensions and smack-experimental."""
 dependencies {
     apply plugin: 'java'
     compile project(":smack-core")
-	compile project(":smack-resolver-javax")
-	compile project(":smack-sasl-javax")
+    compile project(":smack-resolver-javax")
+    compile project(":smack-sasl-javax")
+
+//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-resolver-javax:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-sasl-javax:4.1.0.1'
 }
 
 javadoc {
-	enabled = false
+    enabled = false
 }
 
 jar {
-	manifest {
-		instruction 'Import-Package', '!sun.security.*, *'
-	}
+    manifest {
+        instruction 'Import-Package', '!sun.security.*, *'
+    }
 }
+
+apply from: '../smack-push.gradle'

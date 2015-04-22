@@ -8,5 +8,10 @@ Roster, Chat and other functionality."""
 dependencies {
     apply plugin: 'java'
     compile project(':smack-core')
-	testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+
+//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
+////    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
+
+apply from: '../smack-push.gradle'

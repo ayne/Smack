@@ -1,0 +1,49 @@
+apply plugin: 'maven'
+
+afterEvaluate { project ->
+    uploadArchives {
+        //noinspection GradleMisplacedStatement
+
+        repositories {
+            mavenDeployer {
+                pom.artifactId = POM_ARTIFACT_ID
+                pom.groupId = POM_GROUP
+
+                repository(url: VOYAGER_NEXUS_URL_RELEASE) {
+                    authentication(userName: VOYAGER_NEXUS_USER, password: VOYAGER_NEXUS_PASS)
+                }
+
+                pom.project {
+                    name POM_NAME
+                    packaging POM_PACKAGING
+                    description POM_DESCRIPTION
+                    version POM_VERSION_NAME
+
+                    licenses {
+                        license {
+                            name POM_LICENCE_NAME
+                            url POM_LICENCE_URL
+                            distribution POM_LICENCE_DIST
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id POM_DEVELOPER_ID
+                            name POM_DEVELOPER_NAME
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives sourcesJar
+    }
+}

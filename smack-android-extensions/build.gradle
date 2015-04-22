@@ -6,16 +6,21 @@ Extra Smack extensions for Android."""
 dependencies {
     apply plugin: 'java'
     compile project(':smack-android')
-	compile project(':smack-extensions')
+    compile project(':smack-extensions')
+
+//    compile 'org.igniterealtime.smack:smack-android:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.1'
 }
 
 compileJava {
-	options.bootClasspath = androidBootClasspath
+    options.bootClasspath = androidBootClasspath
 }
 
 // See http://stackoverflow.com/a/2823592/194894
 // TODO this doesn't seem to work right now. But on the other hand it
 // is not really required, just to avoid a javadoc compiler warning
 javadoc {
-	options.linksOffline "http://developer.android.com/reference", androidJavadocOffline
+    options.linksOffline "http://developer.android.com/reference", androidJavadocOffline
 }
+
+apply from: '../smack-push.gradle'

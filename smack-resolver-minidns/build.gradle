@@ -6,6 +6,12 @@ javax.naming API (e.g. Android)."""
 dependencies {
     apply plugin: 'java'
     compile project(path: ':smack-core')
-	compile 'de.measite.minidns:minidns:[0.1,0.2)'
-	compile "org.jxmpp:jxmpp-util-cache:$jxmppVersion"
+    compile 'de.measite.minidns:minidns:[0.1,0.2)'
+    compile "org.jxmpp:jxmpp-util-cache:$jxmppVersion"
+
+//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
+//    compile 'de.measite.minidns:minidns:[0.1,0.2)'
+//    compile "org.jxmpp:jxmpp-util-cache:$jxmppVersion"
 }
+
+apply from: '../smack-push.gradle'

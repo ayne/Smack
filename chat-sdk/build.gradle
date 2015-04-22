@@ -21,20 +21,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    publishNonDefault true
 }
-
-
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
-    //compile project(':asmack-android-library')
     compile project(':smack-android')
+//    compile 'org.igniterealtime.smack:smack-android:4.1.0.1'
     compile project(':smack-android-extensions')
+//    compile 'org.igniterealtime.smack:smack-android-extensions:4.1.0.1'
     compile project(':smack-core')
+//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
     compile project(':smack-tcp')
+//    compile 'org.igniterealtime.smack:smack-tcp:4.1.0.1'
     compile project(':smack-legacy')
+//    compile 'org.igniterealtime.smack:smack-legacy:4.1.0.1'
     compile 'com.jakewharton.timber:timber:2.5.1'
 }
+
+apply from: 'chat-sdk-push.gradle'
