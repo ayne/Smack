@@ -77,7 +77,7 @@ public class MUCMessageManager {
     }
 
 
-    public void sendMessage(String chatroomJID, String message)
+    public Message sendMessage(String chatroomJID, String message)
             throws RemoteException {
         Message groupMessage = new Message(chatroomJID, Message.Type.groupchat);
         groupMessage.setBody(message);
@@ -91,6 +91,8 @@ public class MUCMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return groupMessage;
     }
 
     public Set<String> getChatrooms() {
@@ -99,7 +101,7 @@ public class MUCMessageManager {
         return multiUserChatManager.getJoinedRooms();
     }
 
-    public void sendSticker(String packetId, String body, String chatroomJID,
+    public Message sendSticker(String packetId, String body, String chatroomJID,
                             String mimeType, String timestamp) throws RemoteException {
         Message newMessage = new Message(chatroomJID, Message.Type.groupchat);
 
@@ -127,7 +129,7 @@ public class MUCMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
-
+        return newMessage;
 
     }
 
@@ -162,7 +164,7 @@ public class MUCMessageManager {
         return multiUserChat.isJoined();
     }
 
-    public void sendImageAttachment(String packetId, String attachmentUrl,
+    public Message sendImageAttachment(String packetId, String attachmentUrl,
                                     String localUrl, String chatroomJID, String mimeType)
             throws RemoteException {
 
@@ -204,9 +206,11 @@ public class MUCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
-    public void sendAudioAttachment(String packetId, String attachmentUrl,
+    public Message sendAudioAttachment(String packetId, String attachmentUrl,
                                     String chatroomJID, String mimeType)
             throws RemoteException {
 
@@ -242,9 +246,11 @@ public class MUCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
-    public void sendLocationAttachment(String packetId, String body,
+    public Message sendLocationAttachment(String packetId, String body,
                                        String chatroomJID) throws
             RemoteException {
 
@@ -274,10 +280,11 @@ public class MUCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
 
     }
 
-    public void sendVCFAttachment(String packetId, String body,
+    public Message sendVCFAttachment(String packetId, String body,
                                   String chatroomJID) throws RemoteException {
 
         Message newMessage = new Message();
@@ -296,6 +303,7 @@ public class MUCMessageManager {
 
         // String currentTimeDate = ""+System.currentTimeMillis();
         newMessage.addExtension(form);
+        return newMessage;
     }
 
 }

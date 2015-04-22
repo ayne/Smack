@@ -52,7 +52,7 @@ public class P2PMessageManager {
      * @param imCsSuffix
      * @throws RemoteException
      */
-    public void sendIpToCsSms(String packetId, String message, String toJID, String imCsSuffix)
+    public Message sendIpToCsSms(String packetId, String message, String toJID, String imCsSuffix)
             throws RemoteException {
         Message newMessage = new Message();
         if (packetId != null) {
@@ -73,6 +73,7 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+        return newMessage;
     }
 
     /**
@@ -89,7 +90,7 @@ public class P2PMessageManager {
      * @param nickname    The nickname used in doing the anonymous message
      * @throws android.os.RemoteException
      */
-    public void sendMessageAnonymously(String packetId, String message,
+    public Message sendMessageAnonymously(String packetId, String message,
                                        String toAnonymous, String nickname)
             throws RemoteException {
 
@@ -108,7 +109,7 @@ public class P2PMessageManager {
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
             // replaced by & due to SQLite
-            return;
+            return newMessage;
         }
         newMessage.setBody(message);
         //set message packet's to, to real jid of the recipient
@@ -125,6 +126,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -136,7 +139,7 @@ public class P2PMessageManager {
      * @param message The body of the message to be sent
      * @param to      The jid that will receive the secret message
      */
-    public void sendSecretMessage(String message, String to) throws RemoteException{
+    public Message sendSecretMessage(String message, String to) throws RemoteException{
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -150,6 +153,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -161,7 +166,7 @@ public class P2PMessageManager {
      *
      * @param toJID the real JID to be set as "to" in message packet and to be inserted in the db
      */
-    public void sendSecretImage(String packetId, String attachmentUrl,
+    public Message sendSecretImage(String packetId, String attachmentUrl,
                                 String localUrl, String toJID, String mimeType)
             throws RemoteException {
         Message newMessage = new Message();
@@ -198,6 +203,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -211,7 +218,7 @@ public class P2PMessageManager {
      * @param to   the real JID to be set as "to" in message packet and to be inserted in the db
      * @param body the sticker id to be sent. it is sent as a body of a message.
      */
-    public void sendSecretSticker(String packetId, String body, String to) throws RemoteException {
+    public Message sendSecretSticker(String packetId, String body, String to) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -235,6 +242,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -245,7 +254,7 @@ public class P2PMessageManager {
      * @param body     the lat lng of the location
      * @param toJID
      */
-    public void sendSecretLocationAttachment(String packetId, String body, String toJID) throws RemoteException {
+    public Message sendSecretLocationAttachment(String packetId, String body, String toJID) throws RemoteException {
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -270,6 +279,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -280,7 +291,7 @@ public class P2PMessageManager {
      * @param toJID
      * @param mimeType
      */
-    public void sendSecretAudioAttachment(String packetId, String attachmentUrl, String toJID,
+    public Message sendSecretAudioAttachment(String packetId, String attachmentUrl, String toJID,
                                           String mimeType) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -310,6 +321,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -321,7 +334,7 @@ public class P2PMessageManager {
      * @param attachmentUrl The url of the attachment
      * @param toJID         The real JID of the recipient (+MSISDN@babbleim.com)
      */
-    public void sendImageAttachment(String packetId, String attachmentUrl,
+    public Message sendImageAttachment(String packetId, String attachmentUrl,
                                     String localUrl, String toJID,
                                     String mimeType) {
         Message newMessage = new Message();
@@ -357,6 +370,8 @@ public class P2PMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
 
@@ -376,7 +391,7 @@ public class P2PMessageManager {
      * @param nickname
      * @throws android.os.RemoteException
      */
-    public void sendImageAttachmentAnonymously(String packetId,
+    public Message sendImageAttachmentAnonymously(String packetId,
                                                String attachmentUrl, String localUrl,
                                                String toAnonymous,
                                                String mimeType, String nickname) {
@@ -398,7 +413,7 @@ public class P2PMessageManager {
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
             // replaced by & due to SQLite
-            return;
+            return newMessage;
         }
 
         newMessage.setTo(toJID);
@@ -432,6 +447,8 @@ public class P2PMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -443,7 +460,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendAudioAttachment(String packetId, String attachmentUrl, String toJID,
+    public Message sendAudioAttachment(String packetId, String attachmentUrl, String toJID,
                                     String mimeType) {
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -473,6 +490,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
 
@@ -491,7 +510,7 @@ public class P2PMessageManager {
      * @param nickname
      * @throws android.os.RemoteException
      */
-    public void sendAudioAttachmentAnonymously(String packetId,
+    public Message sendAudioAttachmentAnonymously(String packetId,
                                                String attachmentUrl,
                                                String toAnonymous,
                                                String mimeType, String nickname) {
@@ -512,7 +531,7 @@ public class P2PMessageManager {
         } else if (toJID.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
             // replaced by & due to SQLite
-            return;
+            return newMessage;
         }
         newMessage.setTo(toJID);
         newMessage.setType(Message.Type.secret_chat);
@@ -539,6 +558,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -551,7 +572,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendLocationAttachment(String packetId, String body, String toJID) throws RemoteException {
+    public Message sendLocationAttachment(String packetId, String body, String toJID) throws RemoteException {
         Message newMessage = new Message();
         //TODO add similar method with SSO
         //insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -575,6 +596,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
     /**
@@ -592,7 +615,7 @@ public class P2PMessageManager {
      * @param nickname
      * @throws android.os.RemoteException
      */
-    public void sendLocationAttachmentAnonymously(String packetId, String body,
+    public Message sendLocationAttachmentAnonymously(String packetId, String body,
                                                   String toAnonymous,
                                                   String nickname) throws RemoteException {
 
@@ -613,7 +636,7 @@ public class P2PMessageManager {
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
             // replaced by & due to SQLite
-            return;
+            return newMessage;
         }
 
         newMessage.setTo(toJID);
@@ -637,6 +660,8 @@ public class P2PMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -648,7 +673,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendVCFAttachment(String packetId, String body, String toJID) throws RemoteException {
+    public Message sendVCFAttachment(String packetId, String body, String toJID) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -674,6 +699,8 @@ public class P2PMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -685,7 +712,7 @@ public class P2PMessageManager {
      * @param toJID    The real JID of the recipient (+MSISDN@babbleim.com)
      * @throws android.os.RemoteException
      */
-    public void sendSecretVCFAttachment(String packetId, String body, String toJID) throws RemoteException{
+    public Message sendSecretVCFAttachment(String packetId, String body, String toJID) throws RemoteException{
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -710,6 +737,8 @@ public class P2PMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -727,7 +756,7 @@ public class P2PMessageManager {
      * @param nickname
      * @throws android.os.RemoteException
      */
-    public void sendVCFAttachmentAnonymously(String packetId, String body,
+    public Message sendVCFAttachmentAnonymously(String packetId, String body,
                                              String toAnonymous, String nickname) throws RemoteException{
 
         Message newMessage = new Message();
@@ -747,7 +776,7 @@ public class P2PMessageManager {
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
             // replaced by & due to SQLite
-            return;
+            return newMessage;
         }
 
         newMessage.setTo(toJID);
@@ -770,6 +799,7 @@ public class P2PMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
     }
 
     public void sendChatState(String to, String nickname, int chatState)
@@ -841,7 +871,7 @@ public class P2PMessageManager {
     }
 
 
-    public void sendSticker(String packetId, String body, String to) throws RemoteException {
+    public Message sendSticker(String packetId, String body, String to) throws RemoteException {
 
         Message newMessage = new Message();
         //TODO add similar method with SSO
@@ -864,6 +894,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
 
@@ -882,7 +914,7 @@ public class P2PMessageManager {
      * @param nickname
      * @throws android.os.RemoteException
      */
-    public void sendStickerAnonymously(String packetId, String body, String toAnonymous, String
+    public Message sendStickerAnonymously(String packetId, String body, String toAnonymous, String
             nickname)
             throws RemoteException {
 
@@ -903,7 +935,7 @@ public class P2PMessageManager {
         } else if (toAnonymous.contains("%")) {
             // ignore. this is the 1st char splitter for secret chat which was
             // replaced by & due to SQLite
-            return;
+            return newMessage;
         }
 
         newMessage.setTo(toJID);
@@ -924,6 +956,8 @@ public class P2PMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
 
     }
 

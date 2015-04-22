@@ -101,7 +101,7 @@ public class VGCMessageManager {
      * @param message
      * @throws RemoteException
      */
-    public void sendMessage(String packetId, String groupJID, String message) throws
+    public Message sendMessage(String packetId, String groupJID, String message) throws
             RemoteException {
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
@@ -120,6 +120,7 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return groupMessage;
     }
 
     /**
@@ -131,7 +132,7 @@ public class VGCMessageManager {
      * @param nickname
      * @throws RemoteException
      */
-    public void sendMessageAnonymously(String packetId, String groupJID, String message,
+    public Message sendMessageAnonymously(String packetId, String groupJID, String message,
                                        String nickname) throws RemoteException {
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
@@ -151,6 +152,8 @@ public class VGCMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return groupMessage;
 
     }
 
@@ -265,7 +268,7 @@ public class VGCMessageManager {
      * @param groupJID
      * @throws RemoteException
      */
-    public void sendSticker(String packetId, String body, String groupJID) throws RemoteException {
+    public Message sendSticker(String packetId, String body, String groupJID) throws RemoteException {
         Message newMessage = new Message(groupJID, Message.Type.vgc);
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
@@ -288,6 +291,7 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
 
     }
 
@@ -300,7 +304,7 @@ public class VGCMessageManager {
      * @param nickname
      * @throws RemoteException
      */
-    public void sendStickerAnonymously(String packetId, String body, String groupJID,
+    public Message sendStickerAnonymously(String packetId, String body, String groupJID,
                                        String nickname) throws RemoteException {
 
         Message newMessage = new Message(groupJID, Message.Type.secret_vgc);
@@ -328,6 +332,7 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
     }
 
     /**
@@ -339,7 +344,7 @@ public class VGCMessageManager {
      * @param groupJID
      * @param mimeType
      */
-    public void sendImageAttachment(String packetId, String attachmentUrl,
+    public Message sendImageAttachment(String packetId, String attachmentUrl,
                                     String localUrl, String groupJID, String mimeType) {
 
         Message newMessage = new Message();
@@ -379,6 +384,8 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -390,7 +397,7 @@ public class VGCMessageManager {
      * @param groupJID
      * @param mimeType
      */
-    public void sendImageAttachmentAnonymously(String packetId, String attachmentUrl,
+    public Message sendImageAttachmentAnonymously(String packetId, String attachmentUrl,
                                                String localUrl, String groupJID, String mimeType,
                                                String nickname) {
 
@@ -432,6 +439,7 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
 
     }
 
@@ -444,7 +452,7 @@ public class VGCMessageManager {
      * @param groupJID
      * @param mimeType
      */
-    public void sendAudioAttachment(String packetId, String attachmentUrl,
+    public Message sendAudioAttachment(String packetId, String attachmentUrl,
                                      String groupJID, String mimeType) {
 
         Message newMessage = new Message();
@@ -478,6 +486,8 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -489,7 +499,7 @@ public class VGCMessageManager {
      * @param groupJID
      * @param mimeType
      */
-    public void sendAudioAttachmentAnonymously(String packetId, String attachmentUrl,
+    public Message sendAudioAttachmentAnonymously(String packetId, String attachmentUrl,
                                                String localUrl, String groupJID, String mimeType,
                                                String nickname) {
         Message newMessage = new Message();
@@ -526,6 +536,8 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -535,7 +547,7 @@ public class VGCMessageManager {
      * @param body
      * @param groupJID
      */
-    public void sendVCFAttachment(String packetId, String body, String groupJID) throws RemoteException{
+    public Message sendVCFAttachment(String packetId, String body, String groupJID) throws RemoteException{
 
         Message newMessage = new Message();
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -560,6 +572,8 @@ public class VGCMessageManager {
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
+        return newMessage;
     }
 
 
@@ -570,7 +584,7 @@ public class VGCMessageManager {
      * @param body
      * @param groupJID
      */
-    public void sendVCFAttachmentAnonymously(String packetId, String body,
+    public Message sendVCFAttachmentAnonymously(String packetId, String body,
                                              String groupJID, String timestamp, String nickname) throws  RemoteException{
 
 
@@ -606,6 +620,7 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
 
     }
 
@@ -616,7 +631,7 @@ public class VGCMessageManager {
      * @param body
      * @param groupJID
      */
-    public void sendLocationAttachment(String packetId, String body, String groupJID) throws RemoteException {
+    public Message sendLocationAttachment(String packetId, String body, String groupJID) throws RemoteException {
 
         Message newMessage = new Message();
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
@@ -642,6 +657,8 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return newMessage;
+
     }
 
     /**
@@ -651,7 +668,7 @@ public class VGCMessageManager {
      * @param body
      * @param groupJID
      */
-    public void sendLocationAttachmentAnonymously(String packetId, String body,
+    public Message sendLocationAttachmentAnonymously(String packetId, String body,
                                                   String groupJID, String timestamp,
                                                   String nickname) throws RemoteException{
 
@@ -681,7 +698,7 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
-
+        return newMessage;
     }
 
     /**
