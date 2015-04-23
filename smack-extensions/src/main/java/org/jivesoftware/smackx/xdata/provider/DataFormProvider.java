@@ -125,6 +125,14 @@ public class DataFormProvider extends ExtensionElementProvider<DataForm> {
                 case "option":
                     formField.addOption(parseOption(parser));
                     break;
+                 case "media":
+                     //For Babble setting of media in FormField after parsing.
+                     try {
+                         formField.setMedia(parseMedia(parser));
+                     } catch (Exception e) {
+                         e.printStackTrace();
+                     }
+                     break;
                 // See XEP-122 Data Forms Validation
                 case ValidateElement.ELEMENT:
                     if (namespace.equals(ValidateElement.NAMESPACE)) {
@@ -214,5 +222,61 @@ public class DataFormProvider extends ExtensionElementProvider<DataForm> {
             }
         }
         return option;
+    }
+
+    /**
+     * For Babble to parse the media attachment in message stanza
+     * @param parser
+     * @return
+     * @throws Exception
+     */
+    private FormField.Media parseMedia(XmlPullParser parser) throws Exception {
+        boolean done = false;
+        int eventType;
+        FormField.Media media = new FormField.Media();
+        FormField.Media.Uri uri = null;
+
+        while (!done) {
+            eventType = parser.next();
+            if(eventType == XmlPullParser.START_TAG){
+                if (parser.getName().equals("uri")){
+                    uri = new FormField.Media.Uri();
+                    int attrCount = parser.getAttributeCount();
+                    for(int index = 0; index<attrCount;index++){
+                        String attr = parser.getAttributeValue(index);
+                        if(attr.contains("/")){
+                            uri.setType(attr);
+                        }else{
+                            uri.addParams(attr);
+                        }
+                    }
+                }else if(parser.getName().equals("media")){
+                    int attrCount = parser.getAttributeCount();
+                    for(int index = 0; index<attrCount;index++){
+                        if(parser.getAttributeName(index).equals("height")){
+                            media.setHeight(Integer.parseInt(parser.getAttributeValue(index)));
+                        }else if(parser.getAttributeName(index).equals("width")){
+                            media.setWidth(Integer.parseInt(parser.getAttributeValue(index)));
+                        }
+                    }
+                }
+            }
+            else if(eventType == XmlPullParser.TEXT){
+                if(uri!=null){
+                    String value = parser.getText();
+                    uri.setValue(value);
+                }
+                //else ignore
+            }
+            else if (eventType == XmlPullParser.END_TAG) {
+                if (parser.getName().equals("media")) {
+                    done = true;
+                } else if (parser.getName().equals("uri")){
+                    media.addUri(uri);
+                }
+            }
+
+        }
+        return media;
     }
 }
