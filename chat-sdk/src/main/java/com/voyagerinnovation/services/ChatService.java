@@ -11,6 +11,7 @@ import com.voyagerinnovation.services.managers.P2PMessageManager;
 import com.voyagerinnovation.services.managers.VGCMessageManager;
 import com.voyagerinnovation.services.parsers.StanzaParser;
 import com.voyagerinnovation.smack.security.authentication.DummySSLSocketFactory;
+import com.voyagerinnovation.smack.security.authentication.XSKEYTokenMechanism;
 import com.voyagerinnovation.smack.security.authentication.XYAPTokenMechanism;
 
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -54,8 +55,6 @@ public  class ChatService extends Service implements ConnectionListener,
     public VGCMessageManager vgcMessageManager;
     public MUCMessageManager mucMessageManager;
     private ChatReceivedListener chatReceivedListener;
-    private String jid;
-    private String password;
 
 
     public class LocalBinder extends Binder {
@@ -126,7 +125,6 @@ public  class ChatService extends Service implements ConnectionListener,
             }
         }
 
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(null));
 
         p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
         vgcMessageManager = new VGCMessageManager(xmpptcpConnection);
@@ -151,6 +149,7 @@ public  class ChatService extends Service implements ConnectionListener,
      * @param password password of the passed jid
      */
     public void loginPlain(String jid, String password) {
+        Timber.d("Logging in using plain jid " + jid + " password: " + password);
 
         SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(SASLMechanism.PLAIN);
@@ -187,13 +186,15 @@ public  class ChatService extends Service implements ConnectionListener,
      * @param yapToken The token (x-yap-token) to be used for logging in.
      *                 This is retrieved from <success></success> response after <auth></auth>
      */
-    public void loginXyap(String username, String yapToken) {
+    public void loginXyap(String jid, String password, String yapToken) {
+        Timber.d("Logging in using xyap " + jid + " token: " + yapToken);
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(yapToken));
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
         SASLAuthentication.unBlacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
 
         Timber.d("Logging in using xyap " + yapToken);
         try {
-            xmpptcpConnection.login(username, yapToken,
+            xmpptcpConnection.login(jid, yapToken,
                     XYAPTokenMechanism.MECHANISM_NAME);
         } catch (XMPPException e) {
             e.printStackTrace();
@@ -203,7 +204,35 @@ public  class ChatService extends Service implements ConnectionListener,
                     if (SASLError.token_expired == saslErrorException.getSASLFailure()
                             .getSASLError()) {
                         Timber.e("Token expired. Logign in PLAIN ...");
-                        loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
+                        loginPlain(jid, password);
+                    }
+                }
+            }
+        } catch (SmackException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loginSkey(String jid, String password, String skey) {
+        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism(skey));
+        SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
+        SASLAuthentication.unBlacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
+
+        Timber.d("Logging in using skey " + skey);
+        try {
+            xmpptcpConnection.login(jid, skey,
+                    XSKEYTokenMechanism.MECHANISM_NAME);
+        } catch (XMPPException e) {
+            e.printStackTrace();
+            if (e instanceof SASLErrorException) {
+                SASLErrorException saslErrorException = (SASLErrorException) e;
+                if (saslErrorException.getSASLFailure() != null) {
+                    if (SASLError.token_expired == saslErrorException.getSASLFailure()
+                            .getSASLError()) {
+                        Timber.e("Token expired. Logign in PLAIN ...");
+                        loginPlain(jid, password);
                     }
                 }
             }
@@ -218,9 +247,7 @@ public  class ChatService extends Service implements ConnectionListener,
      * Method to connect to XMPP server. This method performs an automatic login to the server
      * if previous connection state was logged (authenticated).
      */
-    public void connect(String jid, String password) {
-        this.jid = jid;
-        this.password = password;
+    public void connect() {
         if(chatReceivedListener != null){
             chatReceivedListener.onConnecting();
         }
@@ -264,7 +291,7 @@ public  class ChatService extends Service implements ConnectionListener,
         //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
 
         //loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
-        loginPlain(jid, password);
+        //loginPlain(jid, password);
 
 //        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
 //                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
@@ -300,10 +327,6 @@ public  class ChatService extends Service implements ConnectionListener,
         Timber.d("Connected");
         if(chatReceivedListener != null){
             chatReceivedListener.onConnected(connection);
-        }
-
-        if (!xmpptcpConnection.isAuthenticated()) {
-            authenticate();
         }
 //        new Thread() {
 //            @Override
