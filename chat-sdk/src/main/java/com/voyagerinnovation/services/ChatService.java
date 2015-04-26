@@ -124,6 +124,8 @@ public  class ChatService extends Service implements ConnectionListener,
                 SASLAuthentication.blacklistSASLMechanism(entry.getValue());
             }
         }
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism());
+        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism());
 
 
         p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
@@ -151,8 +153,8 @@ public  class ChatService extends Service implements ConnectionListener,
     public void loginPlain(String jid, String password) {
         Timber.d("Logging in using plain jid " + jid + " password: " + password);
 
-        SASLAuthentication.registerSASLMechanism(new SASLPlainMechanism());
         SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
+        SASLAuthentication.blacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(SASLMechanism.PLAIN);
 
         try {
@@ -189,11 +191,11 @@ public  class ChatService extends Service implements ConnectionListener,
      */
     public void loginXyap(String username, String password, String yapToken) {
         Timber.d("Logging in using xyap " + username + " token: " + yapToken);
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism());
+
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
+        SASLAuthentication.blacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
 
-        Timber.d("Logging in using xyap " + yapToken);
         try {
             xmpptcpConnection.login(username, yapToken,
                     XYAPTokenMechanism.MECHANISM_NAME);
@@ -218,8 +220,9 @@ public  class ChatService extends Service implements ConnectionListener,
     }
 
     public void loginSkey(String jid, String password, String skey) {
-        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism(skey));
+
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
+        SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
 
         Timber.d("Logging in using skey " + skey);

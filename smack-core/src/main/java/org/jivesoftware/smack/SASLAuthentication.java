@@ -26,8 +26,6 @@ import org.jivesoftware.smack.sasl.SASLMechanism;
 import org.jivesoftware.smack.sasl.packet.SaslStreamElements.SASLFailure;
 import org.jivesoftware.smack.sasl.packet.SaslStreamElements.Success;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import javax.security.auth.callback.CallbackHandler;
 
 /**
  * <p>This class is responsible authenticating the user using SASL, binding the resource
