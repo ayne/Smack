@@ -116,6 +116,8 @@ public  class ChatService extends Service implements ConnectionListener,
         xmpptcpConnection.addConnectionListener(this);
         xmpptcpConnection.addSyncStanzaListener(this, this);
         xmpptcpConnection.setRosterEnabled(false);
+        xmpptcpConnection.setUseStreamManagement(false);
+        xmpptcpConnection.setUseStreamManagementResumption(false);
 
         //Unregister all preloaded mechanism except for PLAIN and register XYAPTOKENMechanism
         Map<String, String> registeredMechs = SASLAuthentication.getRegisterdSASLMechanisms();
@@ -143,6 +145,11 @@ public  class ChatService extends Service implements ConnectionListener,
     public MUCMessageManager getMucMessageManager(){ return this.mucMessageManager; }
 
     public XMPPTCPConnection getXMPPTCPConnection() { return this.xmpptcpConnection; }
+
+
+    public void instantShutDown(){
+        xmpptcpConnection.instantShutdown();
+    }
 
     /**
      * Method to login to Babble using jid and password
