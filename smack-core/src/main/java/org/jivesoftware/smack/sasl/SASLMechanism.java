@@ -196,7 +196,13 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
         byte[] authenticationBytes = getAuthenticationText();
         String authenticationText;
         if (authenticationBytes != null) {
-            authenticationText = Base64.encodeToString(authenticationBytes);
+            //Added if for Babble's mechs. not required to encode it to base 64.
+            if(!"X-YAP-TOKEN".equals(getName()) && !"X-SKEY".equals(getName())){
+                authenticationText = Base64.encodeToString(authenticationBytes);
+            }
+            else{
+                authenticationText = new String(authenticationBytes);
+            }
         } else {
             // RFC6120 6.4.2 "If the initiating entity needs to send a zero-length initial response,
             // it MUST transmit the response as a single equals sign character ("="), which

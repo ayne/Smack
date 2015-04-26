@@ -151,6 +151,7 @@ public  class ChatService extends Service implements ConnectionListener,
     public void loginPlain(String jid, String password) {
         Timber.d("Logging in using plain jid " + jid + " password: " + password);
 
+        SASLAuthentication.registerSASLMechanism(new SASLPlainMechanism());
         SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(SASLMechanism.PLAIN);
 
@@ -186,15 +187,15 @@ public  class ChatService extends Service implements ConnectionListener,
      * @param yapToken The token (x-yap-token) to be used for logging in.
      *                 This is retrieved from <success></success> response after <auth></auth>
      */
-    public void loginXyap(String jid, String password, String yapToken) {
-        Timber.d("Logging in using xyap " + jid + " token: " + yapToken);
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(yapToken));
+    public void loginXyap(String username, String password, String yapToken) {
+        Timber.d("Logging in using xyap " + username + " token: " + yapToken);
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism());
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
         SASLAuthentication.unBlacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
 
         Timber.d("Logging in using xyap " + yapToken);
         try {
-            xmpptcpConnection.login(jid, yapToken,
+            xmpptcpConnection.login(username, yapToken,
                     XYAPTokenMechanism.MECHANISM_NAME);
         } catch (XMPPException e) {
             e.printStackTrace();
@@ -203,8 +204,9 @@ public  class ChatService extends Service implements ConnectionListener,
                 if (saslErrorException.getSASLFailure() != null) {
                     if (SASLError.token_expired == saslErrorException.getSASLFailure()
                             .getSASLError()) {
-                        Timber.e("Token expired. Logign in PLAIN ...");
-                        loginPlain(jid, password);
+                        if(chatReceivedListener != null){
+                            chatReceivedListener.onTokenExpired();
+                        }
                     }
                 }
             }
@@ -301,6 +303,7 @@ public  class ChatService extends Service implements ConnectionListener,
 
     @Override
     public boolean accept(Stanza stanza) {
+        Timber.i("Stanza " + stanza.toXML().toString());
         return true;
     }
 
@@ -341,6 +344,10 @@ public  class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
+        if(chatReceivedListener!=null){
+            chatReceivedListener.onAuthenticated(connection);
+        }
+
         yapToken = connection.getToken();
         Timber.d("Authenticated xyaptoken is " + yapToken);
         Timber.d("Authenticated tts is " + connection.getTts());
@@ -352,6 +359,7 @@ public  class ChatService extends Service implements ConnectionListener,
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
+
     }
 
     @Override

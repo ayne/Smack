@@ -20,9 +20,11 @@ public interface ChatReceivedListener {
 
     public void onDisconnecting();
 
-    public void onAuthenticated();
+    public void onAuthenticated(XMPPConnection xmppConnection);
 
     public void onAuthenticationFailed();
+
+    public void onTokenExpired();
 
     //Represents receiving a message packet with ts (server time)
     public void onTsReceived(String source, String servertime);

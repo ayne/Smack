@@ -6,17 +6,10 @@ import org.jivesoftware.smack.sasl.packet.SaslStreamElements;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import timber.log.Timber;
-
 public class XYAPTokenMechanism extends SASLMechanism {
 
 
     public static final String MECHANISM_NAME = "X-YAP-TOKEN";
-    private String password;
-
-    public XYAPTokenMechanism(String password){
-        this.password = password;
-    }
 
     @Override
     protected void authenticateInternal(CallbackHandler cbh) throws SmackException {
@@ -25,12 +18,12 @@ public class XYAPTokenMechanism extends SASLMechanism {
 
     @Override
     protected byte[] getAuthenticationText() throws SmackException {
-        return null;
+        byte[] passw = toBytes(password);
+        return passw;
     }
 
     @Override
     public String getName() {
-        Timber.d("Returning SASL mech name " + MECHANISM_NAME);
         return MECHANISM_NAME;
     }
 
