@@ -26,6 +26,10 @@ public interface ChatReceivedListener {
 
     public void onTokenExpired();
 
+    public void onSkeyExpired();
+
+    public void onNotAuthorized();
+
     //Represents receiving a message packet with ts (server time)
     public void onTsReceived(String source, String servertime);
 
