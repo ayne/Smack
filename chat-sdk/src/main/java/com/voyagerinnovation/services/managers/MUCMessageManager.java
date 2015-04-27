@@ -14,11 +14,11 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
 import org.jivesoftware.smackx.muc.Occupant;
+import org.jivesoftware.smackx.muc.RoomInfo;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by charmanesantiago on 4/14/15.
@@ -95,10 +95,34 @@ public class MUCMessageManager {
         return groupMessage;
     }
 
-    public Set<String> getChatrooms() {
+    public List<String> getChatrooms() {
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        return multiUserChatManager.getJoinedRooms();
+        try {
+            return multiUserChatManager.getJoinedRooms("muc.babbleim.com");
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public RoomInfo getChatroomInfo(String chatroomJid){
+        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
+                (xmpptcpConnection);
+        try {
+            return multiUserChatManager.getRoomInfo(chatroomJid);
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Message sendSticker(String packetId, String body, String chatroomJID,

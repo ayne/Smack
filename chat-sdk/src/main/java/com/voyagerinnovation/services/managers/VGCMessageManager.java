@@ -177,10 +177,20 @@ public class VGCMessageManager {
      *
      * @throws RemoteException
      */
-    public Set<String> getJoinedRooms() throws RemoteException {
+    public List<String> getJoinedRooms() throws RemoteException {
+        Timber.d("getting joined rooms...");
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.
                 getInstanceFor(xmpptcpConnection);
-        return multiUserChatManager.getJoinedRooms();
+        try {
+            return multiUserChatManager.getJoinedRooms("vgc.babbleim.com");
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 
