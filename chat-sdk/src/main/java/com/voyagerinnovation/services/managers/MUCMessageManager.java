@@ -13,7 +13,6 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
-import org.jivesoftware.smackx.muc.Occupant;
 import org.jivesoftware.smackx.muc.RoomInfo;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
@@ -158,24 +157,13 @@ public class MUCMessageManager {
     }
 
 
-    public List<Occupant> getChatroomParticipants(String chatroomJID)
+    public List<String> getChatroomParticipants(String chatroomJID)
             throws RemoteException {
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
-
-        try {
-            multiUserChat.getOwners();
-            return multiUserChat.getParticipants();
-        } catch (SmackException.NoResponseException e) {
-            e.printStackTrace();
-        } catch (XMPPException.XMPPErrorException e) {
-            e.printStackTrace();
-        } catch (SmackException.NotConnectedException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return multiUserChat.getOccupants();
     }
 
     public boolean isJoined(String chatroomJID) throws RemoteException {

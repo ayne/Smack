@@ -31,6 +31,7 @@ import org.jivesoftware.smack.sasl.SASLMechanism;
 import org.jivesoftware.smack.sasl.provided.SASLPlainMechanism;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
+import org.jivesoftware.smackx.iqlast.LastActivityManager;
 
 import java.io.IOException;
 import java.util.Map;
@@ -43,7 +44,7 @@ import timber.log.Timber;
  * Service that handles connection to XMPP server as well as parsing of incoming stanzas.
  * Created by charmanesantiago on 3/25/15.
  */
-public  class ChatService extends Service implements ConnectionListener,
+public class ChatService extends Service implements ConnectionListener,
         StanzaListener, StanzaFilter {
 
 
@@ -136,18 +137,24 @@ public  class ChatService extends Service implements ConnectionListener,
 
     }
 
-    public P2PMessageManager getP2PMessageManager(){
+    public P2PMessageManager getP2PMessageManager() {
         return this.p2PMessageManager;
     }
 
-    public VGCMessageManager getVgcMessageManager(){ return this.vgcMessageManager; }
+    public VGCMessageManager getVgcMessageManager() {
+        return this.vgcMessageManager;
+    }
 
-    public MUCMessageManager getMucMessageManager(){ return this.mucMessageManager; }
+    public MUCMessageManager getMucMessageManager() {
+        return this.mucMessageManager;
+    }
 
-    public XMPPTCPConnection getXMPPTCPConnection() { return this.xmpptcpConnection; }
+    public XMPPTCPConnection getXMPPTCPConnection() {
+        return this.xmpptcpConnection;
+    }
 
 
-    public void instantShutDown(){
+    public void instantShutDown() {
         xmpptcpConnection.instantShutdown();
     }
 
@@ -174,7 +181,7 @@ public  class ChatService extends Service implements ConnectionListener,
                     if (SASLError.not_authorized == saslErrorException.getSASLFailure()
                             .getSASLError()) {
                         Timber.e("Not authorized. Please login again!");
-                        if(chatReceivedListener != null){
+                        if (chatReceivedListener != null) {
                             chatReceivedListener.onNotAuthorized();
                         }
                     }
@@ -210,7 +217,7 @@ public  class ChatService extends Service implements ConnectionListener,
                 if (saslErrorException.getSASLFailure() != null) {
                     if (SASLError.token_expired == saslErrorException.getSASLFailure()
                             .getSASLError()) {
-                        if(chatReceivedListener != null){
+                        if (chatReceivedListener != null) {
                             chatReceivedListener.onTokenExpired();
                         }
                     }
@@ -238,7 +245,7 @@ public  class ChatService extends Service implements ConnectionListener,
                 if (saslErrorException.getSASLFailure() != null) {
                     if (SASLError.token_expired == saslErrorException.getSASLFailure()
                             .getSASLError()) {
-                        if(chatReceivedListener != null){
+                        if (chatReceivedListener != null) {
                             chatReceivedListener.onSkeyExpired();
                         }
                     }
@@ -256,7 +263,7 @@ public  class ChatService extends Service implements ConnectionListener,
      * if previous connection state was logged (authenticated).
      */
     public void connect() {
-        if(chatReceivedListener != null){
+        if (chatReceivedListener != null) {
             chatReceivedListener.onConnecting();
         }
         new Thread() {
@@ -296,15 +303,16 @@ public  class ChatService extends Service implements ConnectionListener,
 //        } else {
 //            loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
 //        }
-        //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
+        //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis
+        // /DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
 
         //loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
         //loginPlain(jid, password);
 
 //        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
-//                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis/DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
+//                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis
+// /DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
     }
-
 
 
     @Override
@@ -314,7 +322,7 @@ public  class ChatService extends Service implements ConnectionListener,
     }
 
 
-    public void setOnChatReceivedListener(ChatReceivedListener chatReceivedListener){
+    public void setOnChatReceivedListener(ChatReceivedListener chatReceivedListener) {
         this.chatReceivedListener = chatReceivedListener;
     }
 
@@ -325,7 +333,7 @@ public  class ChatService extends Service implements ConnectionListener,
 //            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
 //        }
 
-        if(chatReceivedListener != null){
+        if (chatReceivedListener != null) {
             StanzaParser.processPacket(packet, xmpptcpConnection, chatReceivedListener);
         }
     }
@@ -334,7 +342,7 @@ public  class ChatService extends Service implements ConnectionListener,
     @Override
     public void connected(final XMPPConnection connection) {
         Timber.d("Connected");
-        if(chatReceivedListener != null){
+        if (chatReceivedListener != null) {
             chatReceivedListener.onConnected(connection);
         }
 //        new Thread() {
@@ -350,7 +358,7 @@ public  class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
-        if(chatReceivedListener!=null){
+        if (chatReceivedListener != null) {
             chatReceivedListener.onAuthenticated(connection);
         }
 
@@ -413,6 +421,20 @@ public  class ChatService extends Service implements ConnectionListener,
      */
     public boolean isAuthenticated() {
         return xmpptcpConnection.isAuthenticated();
+    }
+
+    public long getIdleTime(String jid) {
+        try {
+            return LastActivityManager.getInstanceFor(xmpptcpConnection).getLastActivity(jid)
+                    .getIdleTime();
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
 }
