@@ -16,6 +16,29 @@
  */
 package org.jivesoftware.smackx.muc;
 
+import org.jivesoftware.smack.ConnectionCreationListener;
+import org.jivesoftware.smack.Manager;
+import org.jivesoftware.smack.SmackException.NoResponseException;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPConnectionRegistry;
+import org.jivesoftware.smack.XMPPException.XMPPErrorException;
+import org.jivesoftware.smack.filter.AndFilter;
+import org.jivesoftware.smack.filter.MessageTypeFilter;
+import org.jivesoftware.smack.filter.NotFilter;
+import org.jivesoftware.smack.filter.StanzaExtensionFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
+import org.jivesoftware.smack.filter.StanzaTypeFilter;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smackx.disco.AbstractNodeInformationProvider;
+import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
+import org.jivesoftware.smackx.disco.packet.DiscoverItems;
+import org.jivesoftware.smackx.muc.packet.MUCInitialPresence;
+import org.jivesoftware.smackx.muc.packet.MUCUser;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,29 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import org.jivesoftware.smack.ConnectionCreationListener;
-import org.jivesoftware.smack.Manager;
-import org.jivesoftware.smack.StanzaListener;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPConnectionRegistry;
-import org.jivesoftware.smack.SmackException.NoResponseException;
-import org.jivesoftware.smack.SmackException.NotConnectedException;
-import org.jivesoftware.smack.XMPPException.XMPPErrorException;
-import org.jivesoftware.smack.filter.AndFilter;
-import org.jivesoftware.smack.filter.MessageTypeFilter;
-import org.jivesoftware.smack.filter.StanzaExtensionFilter;
-import org.jivesoftware.smack.filter.StanzaFilter;
-import org.jivesoftware.smack.filter.NotFilter;
-import org.jivesoftware.smack.filter.StanzaTypeFilter;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smackx.disco.AbstractNodeInformationProvider;
-import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
-import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
-import org.jivesoftware.smackx.disco.packet.DiscoverItems;
-import org.jivesoftware.smackx.muc.packet.MUCInitialPresence;
-import org.jivesoftware.smackx.muc.packet.MUCUser;
 
 public class MultiUserChatManager extends Manager {
     private final static String DISCO_NODE = MUCInitialPresence.NAMESPACE + "#rooms";
@@ -225,6 +225,11 @@ public class MultiUserChatManager extends Manager {
     public RoomInfo getRoomInfo(String room) throws NoResponseException, XMPPErrorException, NotConnectedException {
         DiscoverInfo info = ServiceDiscoveryManager.getInstanceFor(connection()).discoverInfo(room);
         return new RoomInfo(info);
+    }
+
+    public List<DiscoverItems.Item> getRoomItems(String room) throws NoResponseException, XMPPErrorException, NotConnectedException {
+        DiscoverItems items = ServiceDiscoveryManager.getInstanceFor(connection()).discoverItems(room);
+        return items.getItems();
     }
 
     /**

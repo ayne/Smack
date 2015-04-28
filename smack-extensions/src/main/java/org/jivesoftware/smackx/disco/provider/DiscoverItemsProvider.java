@@ -17,12 +17,12 @@
 
 package org.jivesoftware.smackx.disco.provider;
 
-import java.io.IOException;
-
 import org.jivesoftware.smack.provider.IQProvider;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 
 /**
 * The DiscoverInfoProvider parses Service Discovery items packets.
@@ -41,6 +41,11 @@ public class DiscoverItemsProvider extends IQProvider<DiscoverItems> {
         String name = "";
         String action = "";
         String node = "";
+        //Added for Babble's vgc disco support.
+        String affiliation = "";
+        String msisdn = "";
+        String first_name = "";
+        String last_name = "";
         discoverItems.setNode(parser.getAttributeValue("", "node"));
         while (!done) {
             int eventType = parser.next();
@@ -51,6 +56,10 @@ public class DiscoverItemsProvider extends IQProvider<DiscoverItems> {
                 name = parser.getAttributeValue("", "name");
                 node = parser.getAttributeValue("", "node");
                 action = parser.getAttributeValue("", "action");
+                affiliation = parser.getAttributeValue("", "affiliation");
+                msisdn = parser.getAttributeValue("", "msisdn");
+                first_name = parser.getAttributeValue("", "first_name");
+                last_name = parser.getAttributeValue("", "last_name");
             }
             else if (eventType == XmlPullParser.END_TAG && "item".equals(parser.getName())) {
                 // Create a new Item and add it to DiscoverItems.
@@ -58,6 +67,10 @@ public class DiscoverItemsProvider extends IQProvider<DiscoverItems> {
                 item.setName(name);
                 item.setNode(node);
                 item.setAction(action);
+                item.setAffiliation(affiliation);
+                item.setMsisdn(msisdn);
+                item.setFirstName(first_name);
+                item.setLastName(last_name);
                 discoverItems.addItem(item);
             }
             else if (eventType == XmlPullParser.END_TAG && "query".equals(parser.getName())) {

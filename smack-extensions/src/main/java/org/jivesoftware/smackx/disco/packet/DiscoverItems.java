@@ -138,6 +138,10 @@ public class DiscoverItems extends IQ {
         private String name;
         private String node;
         private String action;
+        private String affiliation;
+        private String msisdn;
+        private String first_name;
+        private String last_name;
 
         /**
          * Create a new Item associated with a given entity.
@@ -225,10 +229,78 @@ public class DiscoverItems extends IQ {
             this.action = action;
         }
 
+        /**
+         * Added for Babble. Where item should have affiliation
+         * @param affiliation
+         */
+        public void setAffiliation(String affiliation){
+            this.affiliation = affiliation;
+        }
+
+        /**
+         *Added for Babble. to get VGC item affiliation
+         * @return affiliation of the member of the vgc group
+         */
+        public String getAffiliation(){
+            return this.affiliation;
+        }
+
+        /**
+         * Added for Babble. Where item should have msisdn
+         * @param msisdn
+         */
+        public void setMsisdn(String msisdn){
+            this.msisdn = msisdn;
+        }
+
+        /**
+         *Added for Babble. to get VGC item msisdn
+         * @return msisdn of the member of the vgc group
+         */
+        public String getMsisdn(){
+            return this.msisdn;
+        }
+
+        /**
+         * Added for Babble. Where item should have first name
+         * @param first_name
+         */
+        public void setFirstName(String first_name){
+            this.first_name = first_name;
+        }
+
+        /**
+         *Added for Babble. to get VGC item first name
+         * @return first name of the member of the vgc group
+         */
+        public String getFirstName(){
+            return this.first_name;
+        }
+
+        /**
+         * Added for Babble. Where item should have last name
+         * @param last_name
+         */
+        public void setLastName(String last_name){
+            this.last_name = last_name;
+        }
+
+        /**
+         *Added for Babble. to get VGC item last name
+         * @return last name of the member of the vgc group
+         */
+        public String getLastName(){
+            return this.last_name;
+        }
+
         public XmlStringBuilder toXML() {
             XmlStringBuilder xml = new XmlStringBuilder();
             xml.halfOpenElement("item");
             xml.attribute("jid", entityID);
+            xml.optAttribute("affiliation", affiliation);
+            xml.optAttribute("msisdn", msisdn);
+            xml.optAttribute("first_name", first_name);
+            xml.optAttribute("last_name", last_name);
             xml.optAttribute("name", name);
             xml.optAttribute("node", node);
             xml.optAttribute("action", action);

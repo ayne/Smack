@@ -13,6 +13,7 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jivesoftware.smackx.muc.Affiliate;
 import org.jivesoftware.smackx.muc.InvitationListener;
 import org.jivesoftware.smackx.muc.MUCRole;
@@ -26,7 +27,6 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -201,7 +201,6 @@ public class VGCMessageManager {
      *
      * @param groupJID
      * @param roomName
-     * @param nickName
      * @return null if room is successfully created. Error spiel if failed.
      * @throws RemoteException
      */
@@ -461,7 +460,6 @@ public class VGCMessageManager {
      *
      * @param packetId
      * @param attachmentUrl
-     * @param localUrl
      * @param groupJID
      * @param mimeType
      */
@@ -735,6 +733,36 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
 
+        return null;
+    }
+
+    public List<DiscoverItems.Item> getRoomItems(String groupJID){
+        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
+                (xmpptcpConnection);
+        try {
+             return multiUserChatManager.getRoomItems(groupJID);
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public RoomInfo getRoomInfo(String groupJID){
+        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
+                (xmpptcpConnection);
+        try {
+            return multiUserChatManager.getRoomInfo(groupJID);
+        } catch (SmackException.NoResponseException e) {
+            e.printStackTrace();
+        } catch (XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
