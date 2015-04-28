@@ -26,8 +26,8 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import timber.log.Timber;
 
@@ -107,7 +107,8 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
 
-        Message groupMessage = new Message(groupJID, Message.Type.vgc);
+        Message groupMessage = new Message(groupJID);
+        groupMessage.setType(Message.Type.vgc);
         insertMsisdnAndNameIntoMessageIfHasSkey(groupMessage);
         if (packetId != null) {
             groupMessage.setStanzaId(packetId);
@@ -115,7 +116,7 @@ public class VGCMessageManager {
         groupMessage.setBody(message);
 
         try {
-            multiUserChat.sendMessage(groupMessage);
+            multiUserChat.sendMessage(groupMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -137,18 +138,19 @@ public class VGCMessageManager {
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
-        Message groupMessage = new Message(groupJID, Message.Type.secret_vgc);
+        Message groupMessage = new Message(groupJID);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
         groupMessage.setNickname(nickname);
         if (packetId != null) {
-            groupMessage.setPacketID(packetId);
+            groupMessage.setStanzaId(packetId);
         }
 
         groupMessage.setBody(message);
+        groupMessage.setType(Message.Type.secret_vgc);
         try {
-            multiUserChat.sendMessage(groupMessage);
+            multiUserChat.sendMessage(groupMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -203,7 +205,7 @@ public class VGCMessageManager {
      * @return null if room is successfully created. Error spiel if failed.
      * @throws RemoteException
      */
-    public String createRoom(String groupJID, String roomName, String nickName)
+    public String createRoom(String groupJID, String roomName, String username)
             throws RemoteException {
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
@@ -211,7 +213,8 @@ public class VGCMessageManager {
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
 
         try {
-            multiUserChat.create(nickName);
+            multiUserChat.create(username);
+
             Form form = new Form(DataForm.Type.submit);
             FormField ff = new FormField("vgc#roomname");
             ff.addValue(roomName);
@@ -279,7 +282,7 @@ public class VGCMessageManager {
      * @throws RemoteException
      */
     public Message sendSticker(String packetId, String body, String groupJID) throws RemoteException {
-        Message newMessage = new Message(groupJID, Message.Type.vgc);
+        Message newMessage = new Message(groupJID);
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
         if (packetId != null) {
@@ -291,12 +294,12 @@ public class VGCMessageManager {
         field.addValue(body);
         form.addField(field);
         newMessage.addExtension(form);
-
+        newMessage.setType(Message.Type.vgc);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -317,7 +320,7 @@ public class VGCMessageManager {
     public Message sendStickerAnonymously(String packetId, String body, String groupJID,
                                        String nickname) throws RemoteException {
 
-        Message newMessage = new Message(groupJID, Message.Type.secret_vgc);
+        Message newMessage = new Message(groupJID);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
@@ -332,12 +335,12 @@ public class VGCMessageManager {
         field.addValue(body);
         form.addField(field);
         newMessage.addExtension(form);
-
+        newMessage.setType(Message.Type.secret_vgc);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -389,7 +392,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -444,7 +447,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -491,7 +494,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -541,7 +544,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -563,7 +566,7 @@ public class VGCMessageManager {
         insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
 
         if (packetId != null) {
-            newMessage.setPacketID(packetId);
+            newMessage.setStanzaId(packetId);
         }
 
         newMessage.setTo(groupJID);
@@ -578,7 +581,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -625,7 +628,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -662,7 +665,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -703,7 +706,7 @@ public class VGCMessageManager {
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
@@ -759,7 +762,7 @@ public class VGCMessageManager {
      * @return null if successful and no error. Error if failed to invite.
      * @throws RemoteException
      */
-    public String inviteUsers(String groupJID, String[] userName)
+    public MUCAdmin inviteUsers(String groupJID, String[] userName)
             throws RemoteException {
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
@@ -779,6 +782,7 @@ public class VGCMessageManager {
 
         try {
             xmpptcpConnection.sendStanza(setMembers);
+            return setMembers;
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }

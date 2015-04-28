@@ -554,8 +554,11 @@ public class PacketParserUtils {
             case XmlPullParser.START_TAG:
                 String elementName = parser.getName();
                 String namespace = parser.getNamespace();
+                LOGGER.log(Level.INFO, "###elementname " + elementName);
                 switch(elementName) {
+
                 case "status":
+                    LOGGER.log(Level.INFO, "### got status");
                     presence.setStatus(parser.nextText());
                     break;
                 case "priority":

@@ -17,16 +17,16 @@
 
 package org.jivesoftware.smackx.muc.packet;
 
+import org.jivesoftware.smack.packet.DefaultExtensionElement;
+import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.NamedElement;
 import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.util.XmlStringBuilder;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.jivesoftware.smack.packet.ExtensionElement;
-import org.jivesoftware.smack.util.XmlStringBuilder;
 
 /**
  * Represents extended presence information about roles, affiliations, full JIDs,
@@ -232,6 +232,10 @@ public class MUCUser implements ExtensionElement {
      */
     public static MUCUser from(Stanza packet) {
         return packet.getExtension(ELEMENT, NAMESPACE);
+    }
+
+    public static DefaultExtensionElement from(Stanza packet, String element, String namespace){
+        return packet.getExtension(element, namespace);
     }
 
     /**

@@ -17,26 +17,13 @@
 
 package org.jivesoftware.smackx.muc;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketCollector;
-import org.jivesoftware.smack.SmackConfiguration;
-import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.PresenceListener;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.SmackException.NoResponseException;
 import org.jivesoftware.smack.SmackException.NotConnectedException;
+import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
@@ -48,16 +35,14 @@ import org.jivesoftware.smack.filter.FromMatchesFilter;
 import org.jivesoftware.smack.filter.MessageTypeFilter;
 import org.jivesoftware.smack.filter.MessageWithSubjectFilter;
 import org.jivesoftware.smack.filter.NotFilter;
-import org.jivesoftware.smack.filter.PacketIDFilter;
-import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaExtensionFilter;
-import org.jivesoftware.smack.filter.StanzaIdFilter;
+import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.filter.ToFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
 import org.jivesoftware.smackx.disco.packet.DiscoverInfo;
@@ -72,6 +57,18 @@ import org.jivesoftware.smackx.muc.packet.MUCUser.Status;
 import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A MultiUserChat room (XEP-45), created with {@link MultiUserChatManager#getMultiUserChat(String)}.
@@ -306,7 +303,9 @@ public class MultiUserChat {
         connection.addSyncStanzaListener(declinesListener, new AndFilter(new StanzaExtensionFilter(MUCUser.ELEMENT,
                         MUCUser.NAMESPACE), new NotFilter(MessageTypeFilter.ERROR)));
         connection.addPacketInterceptor(presenceInterceptor, new AndFilter(new ToFilter(room),
-                        StanzaTypeFilter.PRESENCE));
+                StanzaTypeFilter.PRESENCE));
+        connection.addPacketInterceptor(presenceInterceptor, new AndFilter(new ToFilter(room),
+                StanzaTypeFilter.PRESENCE));
         messageCollector = connection.createPacketCollector(fromRoomGroupchatFilter);
 
         Presence presence;
@@ -402,13 +401,14 @@ public class MultiUserChat {
 
         Presence presence = enter(nickname, password, history, timeout);
 
-        // Look for confirmation of room creation from the server
-        MUCUser mucUser = MUCUser.from(presence);
-        if (mucUser != null && mucUser.getStatus().contains(Status.ROOM_CREATED_201)) {
-            // Room was created and the user has joined the room
-            return true;
-        }
-        return false;
+//        // Look for confirmation of room creation from the server
+//        LOGGER.log(Level.INFO, "### " + presence.toXML().toString());
+//        MUCUser mucUser = MUCUser.from(presence);
+//        if (mucUser != null && mucUser.getStatus().contains(Status.ROOM_CREATED_201)) {
+//            // Room was created and the user has joined the room
+//            return true;
+//        }
+        return true;
     }
 
     /**
@@ -1642,6 +1642,18 @@ public class MultiUserChat {
     public void sendMessage(Message message) throws NotConnectedException {
         message.setTo(room);
         message.setType(Message.Type.groupchat);
+        connection.sendStanza(message);
+    }
+
+    /**
+     * Added for Babble to send custom type i.e vgc. Sends a Message to the chat room.
+     *
+     * @param message the message.
+     * @throws NotConnectedException
+     */
+    public void sendMessage(Message message, Message.Type type) throws NotConnectedException {
+        message.setTo(room);
+        message.setType(type);
         connection.sendStanza(message);
     }
 
