@@ -16,6 +16,7 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.disco.packet.DiscoverItems;
 import org.jivesoftware.smackx.muc.Affiliate;
 import org.jivesoftware.smackx.muc.InvitationListener;
+import org.jivesoftware.smackx.muc.MUCAffiliation;
 import org.jivesoftware.smackx.muc.MUCRole;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
@@ -803,7 +804,7 @@ public class VGCMessageManager {
 
         if (userName != null) {
             for (String invitee : userName) {
-                MUCItem member = new MUCItem(MUCRole.member, invitee);
+                MUCItem member = new MUCItem(MUCAffiliation.member, invitee);
                 setMembers.addItem(member);
             }
         }
