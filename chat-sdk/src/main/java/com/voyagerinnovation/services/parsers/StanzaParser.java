@@ -46,6 +46,11 @@ public class StanzaParser {
 
             chatReceivedListener.onTsReceived(messagePacket.getSource(), messagePacket.getTS());
 
+            if (messagePacket.getType() == Message.Type.error) {
+                chatReceivedListener.onErrorMessageReceived(messagePacket);
+                return;
+            }
+
             if (messagePacket.getBody() == null
                     && messagePacket.getExtension(Constants.JABBERXEVENT) != null) {
                 chatReceivedListener.onEventReceived(messagePacket);

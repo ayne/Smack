@@ -387,6 +387,9 @@ public class ChatService extends Service implements ConnectionListener,
         if ("stream:error (conflict) text: Replaced by new connection".equals(e.getMessage())) {
             //TODO do handling of error, i.e logout user.
             Timber.d("Stream conflict error");
+            if(chatReceivedListener != null){
+                chatReceivedListener.onAuthenticationFailed();
+            }
         }
 
     }

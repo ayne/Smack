@@ -22,6 +22,11 @@ public interface ChatReceivedListener {
 
     public void onAuthenticated(XMPPConnection xmppConnection);
 
+    /**
+     * Called when user must be logged out and login again.
+     * i.e Resource conflict (signed in to another device)
+     * i.e Wrong password or authentication details.
+     */
     public void onAuthenticationFailed();
 
     public void onTokenExpired();
@@ -32,6 +37,8 @@ public interface ChatReceivedListener {
 
     //Represents receiving a message packet with ts (server time)
     public void onTsReceived(String source, String servertime);
+
+    public void onErrorMessageReceived(Message message);
 
     public void onChatReceived(Message message, boolean isRoute);
 
