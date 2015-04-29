@@ -20,7 +20,6 @@ import org.jivesoftware.smackx.muc.MUCAffiliation;
 import org.jivesoftware.smackx.muc.MUCRole;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
-import org.jivesoftware.smackx.muc.Occupant;
 import org.jivesoftware.smackx.muc.RoomInfo;
 import org.jivesoftware.smackx.muc.packet.MUCAdmin;
 import org.jivesoftware.smackx.muc.packet.MUCItem;
@@ -38,6 +37,7 @@ import timber.log.Timber;
 public class VGCMessageManager {
 
     XMPPTCPConnection xmpptcpConnection;
+    private Message newMessage;
 
     public VGCMessageManager(XMPPTCPConnection xmpptcpConnection) {
         this.xmpptcpConnection = xmpptcpConnection;
@@ -46,19 +46,15 @@ public class VGCMessageManager {
     /**
      * Method to join a VGC (private group) room.
      *
-     * @param nickname
-     * @param groupJID the name of the room in the form "roomName@service", where "service" is
+     * @param nickname The default nickname (i.e MSISDN) to be used when joining the room.
+     * @param groupJid the name of the room in the form "roomName@service", where "service" is
      *                 the hostname at which the
      *                 multi-user chat service is running. Make sure to provide a valid JID.
-     * @throws RemoteException
      */
-    public void joinRoom(String nickname, String groupJID)
-            throws RemoteException {
-
-
+    public void joinRoom(String nickname, String groupJid){
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
 
         try {
             multiUserChat.join(nickname);
@@ -75,8 +71,7 @@ public class VGCMessageManager {
     /**
      * Method to leave a group
      *
-     * @param groupJID
-     * @throws RemoteException
+     * @param groupJID  The jid of the group the user wishes to leave.
      */
     public void leaveRoom(String groupJID) throws RemoteException {
 
@@ -95,92 +90,97 @@ public class VGCMessageManager {
     }
 
     /**
-     * Method to send a message to a group.
+     * Method to send a message to a vgc group.
      *
-     * @param packetId
-     * @param groupJID
-     * @param message
-     * @throws RemoteException
+     * @param packetId     The packet id to be used in the message. Usually you should pass
+     *                     null here. But for the purpose of resending the same message, you
+     *                     can pass the id of the said message.
+     * @param body         The body or message content of an XMPP message.
+     * @param groupJid     The jid of the receiving vgc group.
+     * @param senderMsisdn The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                     inserted.
+     * @param senderName   The name of the sender (logged in user). If null, no name will be
+     *                     inserted.
+     * @return Message          The actual Message that was sent.
      */
-    public Message sendMessage(String packetId, String groupJID, String message) throws
-            RemoteException {
+    public Message sendMessage(String packetId, String groupJid, String body, String senderMsisdn,
+                               String senderName){
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
 
-        Message groupMessage = new Message(groupJID);
-        groupMessage.setType(Message.Type.vgc);
-        insertMsisdnAndNameIntoMessageIfHasSkey(groupMessage);
+        Message message = new Message(groupJid);
+        message.setType(Message.Type.vgc);
+        insertMsisdnAndName(message, senderMsisdn, senderName);
         if (packetId != null) {
-            groupMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
-        groupMessage.setBody(message);
+        message.setBody(body);
 
         try {
-            multiUserChat.sendMessage(groupMessage, Message.Type.vgc);
+            multiUserChat.sendMessage(message, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return groupMessage;
+        return message;
     }
 
     /**
      * Method to send an anonymous message to a group
      *
-     * @param packetId
-     * @param groupJID
-     * @param message
-     * @param nickname
-     * @throws RemoteException
+     *@param packetId    The packet id to be used in the message. Usually you should pass
+     *                    null here. But for the purpose of resending the same message, you
+     *                    can pass the id of the said message.
+     * @param body        The body of the message to be sent
+     * @param groupJid    The jid of the receiving vgc group.
+     * @param nickname    The nickname used in doing the anonymous message
      */
-    public Message sendMessageAnonymously(String packetId, String groupJID, String message,
-                                       String nickname) throws RemoteException {
+    public Message sendMessageAnonymously(String packetId, String groupJid, String body,String nickname){
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
-        Message groupMessage = new Message(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
+        Message message = new Message(groupJid);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
-        groupMessage.setNickname(nickname);
+        message.setNickname(nickname);
         if (packetId != null) {
-            groupMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
-        groupMessage.setBody(message);
-        groupMessage.setType(Message.Type.secret_vgc);
+        message.setBody(body);
+        message.setType(Message.Type.secret_vgc);
         try {
-            multiUserChat.sendMessage(groupMessage, Message.Type.secret_vgc);
+            multiUserChat.sendMessage(message, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return groupMessage;
+        return message;
 
     }
 
     /**
      * Method to check if user is a member of a group
      *
-     * @param groupJID
+     * @param groupJid  The jid of the vgc group to be queried.
      * @return true if joined. false otherwise
      */
-    public boolean isJoined(String groupJID) {
+    public boolean isJoined(String groupJid) {
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
 
         return multiUserChat.isJoined();
     }
 
     /**
      * Method to get joined rooms.
-     *
-     * @throws RemoteException
+     * @Return List<String> of joined rooms.
      */
-    public List<String> getJoinedRooms() throws RemoteException {
+    public List<String> getJoinedRooms(){
         Timber.d("getting joined rooms...");
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.
                 getInstanceFor(xmpptcpConnection);
@@ -200,17 +200,15 @@ public class VGCMessageManager {
     /**
      * Method to create a vgc group.
      *
-     * @param groupJID
-     * @param roomName
-     * @return null if room is successfully created. Error spiel if failed.
-     * @throws RemoteException
+     * @param groupJid      The jid to be used for room creation (non descriptive, UUID).
+     * @param roomName      The name of the group to be used.
+     * @return null if room is successfully created. Exact error spiel if failed.
      */
-    public String createRoom(String groupJID, String roomName, String username)
-            throws RemoteException {
+    public String createRoom(String groupJid, String roomName, String username){
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
 
         try {
             multiUserChat.create(username);
@@ -240,9 +238,8 @@ public class VGCMessageManager {
      * addInvitationListener to use your own listener
      *
      * @param username Username not jid of the user.
-     * @throws RemoteException
      */
-    public void addInvitationListener(final String username) throws RemoteException {
+    public void addInvitationListener(final String username)  {
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
@@ -252,12 +249,8 @@ public class VGCMessageManager {
             public void invitationReceived(XMPPConnection conn, MultiUserChat room, String
                     inviter, String reason, String password, Message message) {
                 Timber.d("inviter: " + inviter + " |to: " + room);
-                try {
-                    joinRoom(username, room.getRoom());
-                    //TODO add notification util
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                joinRoom(username, room.getRoom());
+                //TODO add notification util
             }
         });
     }
@@ -276,99 +269,118 @@ public class VGCMessageManager {
     /**
      * Method to send group message with sticker
      *
-     * @param packetId
-     * @param body
-     * @param groupJID
-     * @throws RemoteException
+     * @param packetId     The packet id to be used in the message. Usually you should pass
+     *                     null here. But for the purpose of resending the same message, you
+     *                     can pass the id of the said message.
+     * @param body         The body or message content of an XMPP message.
+     * @param groupJid     The jid of the vgc group that will receive the message.
+     * @param senderMsisdn The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                     inserted.
+     * @param senderName   The name of the sender (logged in user). If null, no name will be
+     *                     inserted.
+     * @return Message          The actual Message that was sent.
      */
-    public Message sendSticker(String packetId, String body, String groupJID) throws RemoteException {
-        Message newMessage = new Message(groupJID);
-        insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
+    public Message sendSticker(String packetId, String body, String groupJid, String senderMsisdn,
+                               String senderName) {
+        Message message = new Message(groupJid);
+        insertMsisdnAndName(message, senderMsisdn, senderName);
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.STICKER);
         field.addValue(body);
         form.addField(field);
-        newMessage.addExtension(form);
-        newMessage.setType(Message.Type.vgc);
+        message.addExtension(form);
+        message.setType(Message.Type.vgc);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
+            multiUserChat.sendMessage(message, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
     /**
      * Message to send an anonymous message with sticker to a group.
      *
-     * @param packetId
-     * @param body
-     * @param groupJID
-     * @param nickname
-     * @throws RemoteException
+     * @param packetId    The packet id to be assigned in the message stanza. If this is null,
+     *                    a new packet id will be generated else, the passed value is used and
+     *                    will be treated as resending the message
+     * @param body        Body should contain the sticker ID
+     * @param groupJid    The jid of the group the will receive the message.
+     * @param nickname    The nickname to be used when sending the message ("alias").
+     * @return Message    The actual Message that was sent.
      */
-    public Message sendStickerAnonymously(String packetId, String body, String groupJID,
-                                       String nickname) throws RemoteException {
+    public Message sendStickerAnonymously(String packetId, String body, String groupJid,String nickname){
 
-        Message newMessage = new Message(groupJID);
+        Message message = new Message(groupJid);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
-        newMessage.setNickname(nickname);
+        message.setNickname(nickname);
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.STICKER);
         field.addValue(body);
         form.addField(field);
-        newMessage.addExtension(form);
-        newMessage.setType(Message.Type.secret_vgc);
+        message.addExtension(form);
+        message.setType(Message.Type.secret_vgc);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
+            multiUserChat.sendMessage(message, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
     }
 
     /**
      * Method to send a group message with image attachment
      *
-     * @param packetId
-     * @param attachmentUrl
-     * @param localUrl
-     * @param groupJID
-     * @param mimeType
+     * @param packetId      The packet id to be assigned in the message stanza. If this is null,
+     *                      a new packet id will be generated else, the passed value is used and
+     *                      will be treated as resending the message
+     * @param attachmentUrl The url to be inserted in the message, inwhich the receiver can
+     *                      download the image
+     * @param localUrl      The local url of the image attached. This is needed for the base 64
+     *                      thumbnail generation
+     *                      of the image which will be embedded in the message as well.
+     * @param mimeType      The image type of the attachment.
+     * @param groupJID         The real JID of the recipient (+MSISDN@babbleim.com)
+     * @param senderMsisdn  The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                      inserted.
+     * @param senderName    The name of the sender (logged in user). If null, no name will be
+     *                      inserted.
+     * @return Message          The actual Message that was sent.
      */
     public Message sendImageAttachment(String packetId, String attachmentUrl,
-                                    String localUrl, String groupJID, String mimeType) {
+                                       String localUrl, String groupJID, String mimeType,
+                                       String senderMsisdn, String senderName) {
 
-        Message newMessage = new Message();
-        insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
+        Message message = new Message();
+        insertMsisdnAndName(message, senderMsisdn, senderName);
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
-        newMessage.setTo(groupJID);
-        newMessage.setType(Message.Type.vgc);
+        message.setTo(groupJID);
+        message.setType(Message.Type.vgc);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.ATTACHMENT);
@@ -386,45 +398,52 @@ public class VGCMessageManager {
         thumbnailField.addValue(base64);
         form.addField(thumbnailField);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
+            multiUserChat.sendMessage(message, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
     /**
-     * Method to send anonymous group message with image attachment
+     * *
+     * Method to send an anonymous  vgc message with image attachment
      *
-     * @param packetId
-     * @param attachmentUrl
-     * @param localUrl
-     * @param groupJID
-     * @param mimeType
+     * @param packetId      The packet id to be assigned in the message stanza. If this is null,
+     *                      a new packet id will be generated else, the passed value is used and
+     *                      will be treated as resending the message
+     * @param attachmentUrl The url to be inserted in the message, inwhich the receiver can
+     *                      download the image
+     * @param localUrl      The local url of the image attached. This is needed for the base 64
+     *                      thumbnail generation
+     *                      of the image which will be embedded in the mes
+     * @param groupJid      the jid of the vgc group that will receive the message.
+     * @param nickname      The nickname or "alias" to be used when sending the message
+     * @return Message      The actual Message that was sent.
      */
     public Message sendImageAttachmentAnonymously(String packetId, String attachmentUrl,
-                                               String localUrl, String groupJID, String mimeType,
+                                                  String localUrl, String groupJid, String mimeType,
                                                String nickname) {
 
-        Message newMessage = new Message();
+        Message message = new Message();
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
-        newMessage.setTo(groupJID);
-        newMessage.setType(Message.Type.secret_vgc);
+        message.setTo(groupJid);
+        message.setType(Message.Type.secret_vgc);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
-        newMessage.setNickname(nickname);
+        message.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.ATTACHMENT);
@@ -442,40 +461,49 @@ public class VGCMessageManager {
         thumbnailField.addValue(base64);
         form.addField(thumbnailField);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
+            multiUserChat.sendMessage(message, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
     /**
-     * Method to send group message with audio attachment
+     *  Method to send a type vgc message  with audio from the actual IMMessageManager
      *
-     * @param packetId
-     * @param attachmentUrl
-     * @param groupJID
+     * @param packetId      The packet id to be assigned in the message stanza. If this is null,
+     *                      a new packet id will be generated else, the passed value is used and
+     *                      will be treated as resending the message
+     * @param attachmentUrl The url to be included in the message stanza, inwhich the receiving
+     *                      party can download the audio attachment.
+     * @param groupJid       The jid of the receiving party.
      * @param mimeType
+     * @param senderMsisdn  The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                      inserted.
+     * @param senderName    The name of the sender (logged in user). If null, no name will be
+     *                      inserted.
+     * @return Message          The actual Message that was sent.
      */
     public Message sendAudioAttachment(String packetId, String attachmentUrl,
-                                     String groupJID, String mimeType) {
+                                       String groupJid, String mimeType,
+                                       String senderMsisdn, String senderName) {
 
-        Message newMessage = new Message();
-        insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
+        Message message = new Message();
+        insertMsisdnAndName(message, senderMsisdn, senderName);
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
-        newMessage.setTo(groupJID);
-        newMessage.setType(Message.Type.vgc);
+        message.setTo(groupJid);
+        message.setType(Message.Type.vgc);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.ATTACHMENT);
@@ -488,44 +516,47 @@ public class VGCMessageManager {
         field.setMedia(mediaField);
         form.addField(field);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
+            multiUserChat.sendMessage(message, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
     /**
      * Method to send anonymous group message with audio attachment
      *
-     * @param packetId
-     * @param attachmentUrl
-     * @param localUrl
-     * @param groupJID
-     * @param mimeType
+     * @param packetId      The packet id to be assigned in the message stanza. If this is null,
+     *                      a new packet id will be generated else, the passed value is used and
+     *                      will be treated as resending the message
+     * @param attachmentUrl The remote url of the uploaded image, that is to be attached in the
+     *                      form field of the message stanza
+     * @param groupJid      The jid of the group what will receive the message.
+     *                      and ConversationsTable
+     * @param nickname
+     * @return Message      The actual Message that was sent.
      */
     public Message sendAudioAttachmentAnonymously(String packetId, String attachmentUrl,
-                                               String localUrl, String groupJID, String mimeType,
-                                               String nickname) {
-        Message newMessage = new Message();
+                                                  String groupJid, String mimeType,String nickname) {
+        Message message = new Message();
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
-        newMessage.setTo(groupJID);
-        newMessage.setType(Message.Type.secret_vgc);
+        message.setTo(groupJid);
+        message.setType(Message.Type.secret_vgc);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
-        newMessage.setNickname(nickname);
+        message.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.ATTACHMENT);
@@ -538,37 +569,44 @@ public class VGCMessageManager {
         field.setMedia(mediaField);
         form.addField(field);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
+            multiUserChat.sendMessage(message, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
     /**
-     * Method to send group message with VCF contact attachment
+     *  Method to send a type vgc message  with VCF file contact
      *
-     * @param packetId
-     * @param body
-     * @param groupJID
+     * @param packetId     The packet id to be assigned in the message stanza. If this is null,
+     *                     a new packet id will be generated else, the passed value is used and
+     *                     will be treated as resending the message
+     * @param groupJid        The real JID of the recipient (+MSISDN@babbleim.com)
+     * @param senderMsisdn The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                     inserted.
+     * @param senderName   The name of the sender (logged in user). If null, no name will be
+     *                     inserted.
+     * @return Message          The actual Message that was sent.
      */
-    public Message sendVCFAttachment(String packetId, String body, String groupJID) throws RemoteException{
+    public Message sendVCFAttachment(String packetId, String body, String groupJid,
+                                     String senderMsisdn, String senderName){
 
         Message newMessage = new Message();
-        insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
+        insertMsisdnAndName(newMessage, senderMsisdn, senderName);
 
         if (packetId != null) {
             newMessage.setStanzaId(packetId);
         }
 
-        newMessage.setTo(groupJID);
+        newMessage.setTo(groupJid);
         newMessage.setType(Message.Type.vgc);
 
         DataForm form = new DataForm(DataForm.Type.form);
@@ -578,7 +616,7 @@ public class VGCMessageManager {
         newMessage.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
             multiUserChat.sendMessage(newMessage, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
@@ -590,14 +628,22 @@ public class VGCMessageManager {
 
 
     /**
-     * Method to send anonymous group message with VCF contact attachment
+     * Method to send a anonymouse vgc message with VCF Contact File attachment.
+     * IMMessageManager
      *
-     * @param packetId
-     * @param body
-     * @param groupJID
+     * @param packetId    The packet id to be assigned in the message stanza. If this is null,
+     *                    a new packet id will be generated else, the passed value is used and
+     *                    will be treated as resending the message
+     * @param body        Empty *double check
+     * @param groupJid i.e secret_chat&MSISDN@babbleim.com or secret_chat#MSISDN@babbleim.com
+     *                    this will be parsed to get the real JID: MSISDN@babbleim.com,
+     *                    but will use the original value as JID when inserting in MessagesTable
+     *                    and ConversationsTable
+     * @param nickname
+     * @return Message          The actual Message that was sent.
      */
     public Message sendVCFAttachmentAnonymously(String packetId, String body,
-                                             String groupJID, String timestamp, String nickname) throws  RemoteException{
+                                             String groupJid, String nickname){
 
 
         Message newMessage = new Message();
@@ -606,12 +652,7 @@ public class VGCMessageManager {
             newMessage.setStanzaId(packetId);
         }
 
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
-
-
-        newMessage.setTo(groupJID);
+        newMessage.setTo(groupJid);
         newMessage.setType(Message.Type.secret_vgc);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
@@ -625,7 +666,7 @@ public class VGCMessageManager {
         newMessage.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
             multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
@@ -639,91 +680,103 @@ public class VGCMessageManager {
     /**
      * Method to send group message with location
      *
-     * @param packetId
-     * @param body
-     * @param groupJID
+     * @param packetId     The packet id to be assigned in the message stanza. If this is null,
+     *                     a new packet id will be generated else, the passed value is used and
+     *                     will be treated as resending the message
+     * @param body         Should contain the lat,long of the location to be sent.
+     * @param groupJid        The real JID of the recipient (+MSISDN@babbleim.com)
+     * @param senderMsisdn The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                     inserted.
+     * @param senderName   The name of the sender (logged in user). If null, no name will be
+     *                     inserted.
+     * @return Message          The actual Message that was sent.
      */
-    public Message sendLocationAttachment(String packetId, String body, String groupJID) throws RemoteException {
+    public Message sendLocationAttachment(String packetId, String body, String groupJid,
+                                          String senderMsisdn, String senderName){
 
-        Message newMessage = new Message();
-        insertMsisdnAndNameIntoMessageIfHasSkey(newMessage);
+        Message message = new Message();
+        insertMsisdnAndName(message, senderMsisdn, senderName);
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
 
-        newMessage.setTo(groupJID);
-        newMessage.setType(Message.Type.vgc);
+        message.setTo(groupJid);
+        message.setType(Message.Type.vgc);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.LOCATION);
         field.addValue(body);
         form.addField(field);
-        newMessage.addExtension(form);
+        message.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.vgc);
+            multiUserChat.sendMessage(message, Message.Type.vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
     /**
      * Method to send anonymous group message with location
      *
-     * @param packetId
-     * @param body
-     * @param groupJID
+     * @param packetId    The packet id to be assigned in the message stanza. If this is null,
+     *                    a new packet id will be generated else, the passed value is used and
+     *                    will be treated as resending the message
+     * @param body        The message body should be a String containing the lat,
+     *                    long of the location
+     * @param groupJid    The jid of the receiving vgc group.
+     * @param nickname    The nickname to be used when sending the anonymous message.
+     * @return Message    The actual Message that was sent.
      */
     public Message sendLocationAttachmentAnonymously(String packetId, String body,
-                                                  String groupJID, String timestamp,
-                                                  String nickname) throws RemoteException{
+                                                  String groupJid, String nickname){
 
-        Message newMessage = new Message();
+        Message message = new Message();
 
         if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+            message.setStanzaId(packetId);
         }
-        newMessage.setTo(groupJID);
-        newMessage.setType(Message.Type.secret_vgc);
+        message.setTo(groupJid);
+        message.setType(Message.Type.secret_vgc);
         if (nickname != null) {
             nickname = TextUtils.htmlEncode(nickname);
         }
-        newMessage.setNickname(nickname);
+        message.setNickname(nickname);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.LOCATION);
         field.addValue(body);
         form.addField(field);
-        newMessage.addExtension(form);
+        message.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
-            multiUserChat.sendMessage(newMessage, Message.Type.secret_vgc);
+            multiUserChat.sendMessage(message, Message.Type.secret_vgc);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
     }
 
     /**
      * Method to get the owner of a group.
-     * @param groupJID
+     * @param groupJid
      * @return
      * @throws RemoteException
      */
-    public List<Affiliate> getOwner(String groupJID)
+    public List<Affiliate> getOwner(String groupJid)
             throws RemoteException {
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJid);
         try {
             return multiUserChat.getOwners();
         } catch (SmackException.NoResponseException e) {
@@ -737,11 +790,18 @@ public class VGCMessageManager {
         return null;
     }
 
-    public List<DiscoverItems.Item> getRoomItems(String groupJID){
+    /**
+     * Method to get the disco items of a vgc group. Used for querying members of a group
+     * The result will return disco items with affiliations (owner, member) and other info.
+     *
+     * @param groupJid      The jid of the vgc group to be queried.
+     * @return List<DiscoverItems.Item> members of the group.
+     */
+    public List<DiscoverItems.Item> getRoomItems(String groupJid){
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         try {
-             return multiUserChatManager.getRoomItems(groupJID);
+             return multiUserChatManager.getRoomItems(groupJid);
         } catch (SmackException.NoResponseException e) {
             e.printStackTrace();
         } catch (XMPPException.XMPPErrorException e) {
@@ -752,11 +812,16 @@ public class VGCMessageManager {
         return null;
     }
 
-    public RoomInfo getRoomInfo(String groupJID){
+    /**
+     * Method to query info of a vgc group (i.e subject or name of group).
+     * @param groupJid  The jid of the vgc group to be queried.
+     * @return RoomInfo
+     */
+    public RoomInfo getRoomInfo(String groupJid){
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
         try {
-            return multiUserChatManager.getRoomInfo(groupJID);
+            return multiUserChatManager.getRoomInfo(groupJid);
         } catch (SmackException.NoResponseException e) {
             e.printStackTrace();
         } catch (XMPPException.XMPPErrorException e) {
@@ -765,23 +830,6 @@ public class VGCMessageManager {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public List<Occupant> getParticipants(String groupJID){
-        MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
-                (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(groupJID);
-        try {
-            return multiUserChat.getParticipants();
-        } catch (SmackException.NoResponseException e) {
-            e.printStackTrace();
-        } catch (XMPPException.XMPPErrorException e) {
-            e.printStackTrace();
-        } catch (SmackException.NotConnectedException e) {
-            e.printStackTrace();
-        }
-        return null;
-
     }
 
     /**
@@ -897,16 +945,22 @@ public class VGCMessageManager {
         return null;
     }
 
-    private void insertMsisdnAndNameIntoMessageIfHasSkey(Message message, String skey, String
-            msisdn, String firstname, String lastname) {
-        if (!TextUtils.isEmpty(skey)) {
+    /**
+     * Method to insert SSO profile details in message stanza
+     *
+     * @param message The Message to be modified.
+     * @param msisdn  The msisdn to be inserted. If value is null, no msisdn will be placed.
+     * @param name    The name to be inserted (i.e "SSOFirstName SSOLastName"). If value is null no
+     *                name will be placed.
+     */
+    private void insertMsisdnAndName(Message message, String msisdn, String
+            name) {
+        if (!TextUtils.isEmpty(msisdn)) {
             message.setMsisdn(msisdn);
-            message.setName(firstname + " " + lastname);
         }
-    }
-
-    private void insertMsisdnAndNameIntoMessageIfHasSkey(Message message){
-        //TODO
+        if (!TextUtils.isEmpty(name)) {
+            message.setName(name);
+        }
     }
 
 }

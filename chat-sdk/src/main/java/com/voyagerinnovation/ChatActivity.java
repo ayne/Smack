@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -64,18 +63,6 @@ public abstract class ChatActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 mChatService.disconnect();
-            }
-        });
-
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    mChatService.getP2PMessageManager().sendMessage(null, "hello", "test2" +
-                                "@babbleim.com");
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }
         });
     }

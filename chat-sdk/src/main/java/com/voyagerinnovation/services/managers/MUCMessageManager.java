@@ -1,7 +1,5 @@
 package com.voyagerinnovation.services.managers;
 
-import android.os.RemoteException;
-
 import com.voyagerinnovation.constants.Constants;
 import com.voyagerinnovation.environment.Environment;
 import com.voyagerinnovation.util.BabbleImageProcessorUtil;
@@ -41,13 +39,18 @@ public class MUCMessageManager {
         }
     }
 
-    public boolean joinRoom(String nickname, String chatroomJID)
-            throws RemoteException {
+    /**
+     * Method to join a public chatroom.
+     * @param nickname      The nickname to be used when joining.
+     * @param chatroomJid   The jid of the chatroom to be joined in to.
+     * @return  true if successfully joined. false otherwise.
+     */
+    public boolean joinRoom(String nickname, String chatroomJid){
 
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         try {
             multiUserChat.join(nickname);
@@ -63,37 +66,56 @@ public class MUCMessageManager {
 
     }
 
-    public void leaveRoom(String chatroomJID) throws RemoteException, SmackException
-            .NotConnectedException {
+    /**
+     * Method to leave a public chatroom.
+     * @param chatroomJid
+     * @return true if succefully left the room. false otherwise.
+     */
+    public boolean leaveRoom(String chatroomJid) {
 
-        if (!chatroomJID.contains("@")) {
-            chatroomJID = chatroomJID.concat(Environment.IM_CHATROOM_SUFFIX);
+        if (!chatroomJid.contains("@")) {
+            chatroomJid = chatroomJid.concat(Environment.IM_CHATROOM_SUFFIX);
         }
         // mMultiUserChatMap.get(roomName).leave();
         Presence quitPresence = new Presence(Presence.Type.unavailable);
-        quitPresence.setTo(chatroomJID);
-        xmpptcpConnection.sendStanza(quitPresence);
+        quitPresence.setTo(chatroomJid);
+        try {
+            xmpptcpConnection.sendStanza(quitPresence);
+            return true;
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 
-    public Message sendMessage(String chatroomJID, String message)
-            throws RemoteException {
-        Message groupMessage = new Message(chatroomJID, Message.Type.groupchat);
-        groupMessage.setBody(message);
+    /**
+     * Method to send a message in public chatroom
+     * @param chatroomJid The jid of the chatroom which will receive the message.
+     * @param body        The body or content of the message
+     * @return Message    The actual Message that was sent.
+     */
+    public Message sendMessage(String chatroomJid, String body){
+        Message message = new Message(chatroomJid, Message.Type.groupchat);
+        message.setBody(body);
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         try {
-            multiUserChat.sendMessage(groupMessage);
+            multiUserChat.sendMessage(message);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return groupMessage;
+        return message;
     }
 
+    /**
+     * Method to get all available public chatrooms
+     * @return List<String> of public chatrooms.
+     */
     public List<String> getChatrooms() {
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
@@ -109,6 +131,11 @@ public class MUCMessageManager {
         return null;
     }
 
+    /**
+     * Method to get the information about a chatroom. i.e list of participants
+     * @param chatroomJid   The jid of the chatroom to be queried.
+     * @return RoomInfo
+     */
     public RoomInfo getChatroomInfo(String chatroomJid){
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
@@ -124,69 +151,86 @@ public class MUCMessageManager {
         return null;
     }
 
-    public Message sendSticker(String packetId, String body, String chatroomJID,
-                            String mimeType, String timestamp) throws RemoteException {
-        Message newMessage = new Message(chatroomJID, Message.Type.groupchat);
-
-        if (packetId != null) {
-            newMessage.setStanzaId(packetId);
-        }
-
-        if (timestamp == null) {
-            timestamp = "" + System.currentTimeMillis();
-        }
+    /**
+     * Method to send a sticker to a public chatroom.
+     * @param body          The body of the message which contains the sticker id.
+     * @param chatroomJid   The jid of the chatroom that will receive the sticker.
+     * @return Message      The actual Message that was sent.
+     */
+    public Message sendSticker(String body, String chatroomJid){
+        Message message = new Message(chatroomJid, Message.Type.groupchat);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.STICKER);
         field.addValue(body);
         form.addField(field);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(message);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
-        return newMessage;
+        return message;
 
     }
 
 
-    public List<String> getChatroomParticipants(String chatroomJID)
-            throws RemoteException {
+    /**
+     * Method to get the participants of a chatroom.
+     * @param chatroomJid   The jid of the chatroom to be queried.
+     * @return List<String> of particpants.
+     */
+    public List<String> getChatroomParticipants(String chatroomJid){
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
         return multiUserChat.getOccupants();
     }
 
-    public boolean isJoined(String chatroomJID) throws RemoteException {
+    /**
+     * Method to check if currently joined to the chatroom.
+     * @param chatroomJid   The jid of the chatroom to be queried.
+     * @return true if joined. false otherwise.
+     */
+    public boolean isJoined(String chatroomJid){
 
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         return multiUserChat.isJoined();
     }
 
-    public Message sendImageAttachment(String packetId, String attachmentUrl,
-                                    String localUrl, String chatroomJID, String mimeType)
-            throws RemoteException {
+    /**
+     * Method to send an image to a public chatroom.
+     * @param packetId      Could be null. But usually has value since message with image is usually
+     *                      displayed in listviews alreasy before completion of the upload.
+     * @param attachmentUrl The url to be inserted in the message, inwhich the receiver can
+     *                      download the image
+     * @param localUrl      The local url of the image attached. This is needed for the base 64
+     *                      thumbnail generation
+     *                      of the image which will be embedded in the me
+     * @param chatroomJid   The jid of the chatroom that will receive the message.
+     * @param mimeType      Type of image.
+     * @return Message      The actual Message that was sent.
+     */
+    public Message sendImageAttachment(String packetId, String attachmentUrl, String localUrl, String chatroomJid,
+                                       String mimeType){
 
-        Message newMessage = new Message();
-
-        if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+        Message message = new Message();
+        if(packetId != null){
+            message.setStanzaId(packetId);
         }
-        newMessage.setTo(chatroomJID);
-        newMessage.setType(Message.Type.groupchat);
+        message.setTo(chatroomJid);
+        message.setType(Message.Type.groupchat);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.ATTACHMENT);
@@ -199,41 +243,48 @@ public class MUCMessageManager {
         field.setMedia(mediaField);
         form.addField(field);
 
-        String base64 = BabbleImageProcessorUtil.generateThumbnail(packetId,
+        String base64 = BabbleImageProcessorUtil.generateThumbnail(message.getStanzaId(),
                 localUrl, mimeType);
         FormField thumbnailField = new FormField(
                 Constants.THUMBNAIL);
         thumbnailField.addValue(base64);
         form.addField(thumbnailField);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(message);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
+    /**
+     * Message to send an audio recording to a public chatroom.
+     * @param packetId      Could be null. But usually has value since message with image is usually
+     *                      displayed in listviews alreasy before completion of the upload.
+     * @param attachmentUrl The url to be included in the message stanza, inwhich the receiving
+     *                      party can download the audio attachment.
+     * @param chatroomJid         The jid of the receiving party.
+     * @param mimeType
+     * @return Message  The actual Message that was sent.
+     */
     public Message sendAudioAttachment(String packetId, String attachmentUrl,
-                                    String chatroomJID, String mimeType)
-            throws RemoteException {
+                                    String chatroomJid, String mimeType){
 
-        Message newMessage = new Message();
-
-        if (packetId != null) {
-            newMessage.setStanzaId(packetId);
+        Message message = new Message();
+        if(packetId != null){
+            message.setStanzaId(packetId);
         }
-
-        newMessage.setTo(chatroomJID);
-        newMessage.setType(Message.Type.groupchat);
+        message.setTo(chatroomJid);
+        message.setType(Message.Type.groupchat);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.ATTACHMENT);
@@ -246,45 +297,45 @@ public class MUCMessageManager {
         field.setMedia(mediaField);
         form.addField(field);
 
-        newMessage.addExtension(form);
+        message.addExtension(form);
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         try {
-            multiUserChat.sendMessage(newMessage);
+            multiUserChat.sendMessage(message);
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
 
-        return newMessage;
+        return message;
 
     }
 
-    public Message sendLocationAttachment(String packetId, String body,
-                                       String chatroomJID) throws
-            RemoteException {
+    /**
+     * Method to send a type groupchat message  with location.
+     * @param body        body content of message. should contain the lat,long of the location to be sent.
+     * @param chatroomJid The jid of the chatroom that will receive the Message.
+     * @return Message  The actual Message that was sent.
+     */
+    public Message sendLocationAttachment(String body,
+                                       String chatroomJid) {
 
         Message newMessage = new Message();
 
-        if (packetId != null) {
-            newMessage.setStanzaId(packetId);
-        }
-
-        newMessage.setTo(chatroomJID);
+        newMessage.setTo(chatroomJid);
         newMessage.setType(Message.Type.groupchat);
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.LOCATION);
         field.addValue(body);
         form.addField(field);
 
-        // String currentTimeDate = ""+System.currentTimeMillis();
         newMessage.addExtension(form);
 
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
                 (xmpptcpConnection);
-        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJID);
+        MultiUserChat multiUserChat = multiUserChatManager.getMultiUserChat(chatroomJid);
 
         try {
             multiUserChat.sendMessage(newMessage);
@@ -296,26 +347,25 @@ public class MUCMessageManager {
 
     }
 
-    public Message sendVCFAttachment(String packetId, String body,
-                                  String chatroomJID) throws RemoteException {
+    /**
+     * Method to send VCF contact in public chatroom
+     * @param body       The body of the message.
+     * @param chatroomJid the jid of the chatroom that will receive the Message.
+     * @return Message  The actual Message that was sent.
+     */
+    public Message sendVCFAttachment(String body,
+                                  String chatroomJid){
 
-        Message newMessage = new Message();
-
-        if (packetId != null) {
-            newMessage.setStanzaId(packetId);
-        }
-
-        newMessage.setTo(chatroomJID);
-        newMessage.setType(Message.Type.groupchat);
+        Message message = new Message();
+        message.setTo(chatroomJid);
+        message.setType(Message.Type.groupchat);
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.VCARD);
         field.addValue(body);
         form.addField(field);
-
-        // String currentTimeDate = ""+System.currentTimeMillis();
-        newMessage.addExtension(form);
-        return newMessage;
+        message.addExtension(form);
+        return message;
     }
 
 }
