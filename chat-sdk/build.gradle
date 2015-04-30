@@ -53,7 +53,7 @@ dependencies {
 //    compile 'org.igniterealtime.smack:smack-java7:4.1.0.2'
 //    compile 'org.igniterealtime.smack:smack-jingle-old:4.1.0.2'
 //    compile 'org.igniterealtime.smack:smack-resolver-dnsjava:4.1.0.2'
-//    compile 'org.igniterealtime.smack:smack-resolver-javax:4.2.0.0'
+//    compile 'org.igniterealtime.smack:smack-resolver-javax:4.1.0.2'
 //    compile 'org.igniterealtime.smack:smack-sasl-javax:4.1.0.2'
 
     compile 'com.jakewharton.timber:timber:2.5.1'
