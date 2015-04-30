@@ -16,9 +16,9 @@ dependencies {
     compile project(":smack-resolver-javax")
     compile project(":smack-sasl-javax")
 
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
-//    compile 'org.igniterealtime.smack:smack-resolver-javax:4.1.0.1'
-//    compile 'org.igniterealtime.smack:smack-sasl-javax:4.1.0.1'
+//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+//    compile 'org.igniterealtime.smack:smack-resolver-javax:4.1.0.2'
+//    compile 'org.igniterealtime.smack:smack-sasl-javax:4.2.0.0'
 }
 
 javadoc {
