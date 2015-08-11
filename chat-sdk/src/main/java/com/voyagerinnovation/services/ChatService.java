@@ -82,6 +82,61 @@ public class ChatService extends Service implements ConnectionListener,
 
     }
 
+    public void configureConnection(boolean isDebuggable, String host, int port,
+                                    String serviceName, boolean sendPresence){
+        SmackConfiguration.DEBUG = isDebuggable;
+
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLCramMD5Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLDigestMD5Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLExternalMechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLGSSAPIMechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLJavaXMechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
+// .SASLJavaXSmackInitializer");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.core
+// .SCRAMSHA1Mechanism");
+//        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.core
+// .SASLXOauth2Mechanism");
+
+
+        XMPPTCPConnectionConfiguration mConnectionConfig = XMPPTCPConnectionConfiguration.builder()
+                .setHost(host)
+                .setPort(port)
+                .setServiceName(serviceName)
+                .setSendPresence(sendPresence)
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible)
+                .setSocketFactory(new DummySSLSocketFactory())
+                .setDebuggerEnabled(isDebuggable)
+                .build();
+
+        xmpptcpConnection = new XMPPTCPConnection(mConnectionConfig);
+        xmpptcpConnection.addConnectionListener(this);
+        xmpptcpConnection.addSyncStanzaListener(this, this);
+        xmpptcpConnection.setRosterEnabled(false);
+        xmpptcpConnection.setUseStreamManagement(false);
+        xmpptcpConnection.setUseStreamManagementResumption(false);
+
+        //Unregister all preloaded mechanism except for PLAIN and register XYAPTOKENMechanism
+        Map<String, String> registeredMechs = SASLAuthentication.getRegisterdSASLMechanisms();
+        for (Map.Entry<String, String> entry : registeredMechs.entrySet()) {
+            if (!SASLMechanism.PLAIN.equals(entry.getValue())) {
+                SASLAuthentication.blacklistSASLMechanism(entry.getValue());
+            }
+        }
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism());
+        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism());
+
+
+        p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
+        vgcMessageManager = new VGCMessageManager(xmpptcpConnection);
+        mucMessageManager = new MUCMessageManager(xmpptcpConnection);
+    }
+
     private void configureConnection() {
         SmackConfiguration.DEBUG = true;
 
