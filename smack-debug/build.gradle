@@ -4,11 +4,11 @@ Inspect the exchanged XMPP stanzas."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(':smack-core')
-    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+//    compile project(':smack-core')
+//    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
-// //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+ //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
 
 apply from: '../smack-push.gradle'

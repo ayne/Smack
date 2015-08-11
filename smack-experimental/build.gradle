@@ -6,13 +6,13 @@ between patch versions."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(':smack-core')
-    compile project(':smack-extensions')
-    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+//    compile project(':smack-core')
+//    compile project(':smack-extensions')
+//    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.1'
-//    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.1'
-////    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.2'
+//    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
 
 apply from: '../smack-push.gradle'

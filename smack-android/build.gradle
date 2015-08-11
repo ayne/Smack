@@ -9,19 +9,19 @@ smack-extensions and smack-experimental."""
 dependencies {
     // androidProjects lists all projects that are checked to compile against android.jar
     // Filter out the optional Smack dependencies from androidProjects
-    androidProjects.findAll {
-        ![':smack-tcp', ':smack-extensions', ':smack-experimental', ':smack-bosh'].contains(it.getPath())
-    }.each { project ->
-        apply plugin: 'java'
-        compile project
-    }
+//    androidProjects.findAll {
+//        ![':smack-tcp', ':smack-extensions', ':smack-experimental', ':smack-bosh'].contains(it.getPath())
+//    }.each { project ->
+//        apply plugin: 'java'
+//        compile project
+//    }
 
     apply plugin: 'java'
 
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
-//    compile 'org.igniterealtime.smack:smack-im:4.1.0.2'
-//    compile 'org.igniterealtime.smack:smack-sasl-provided:4.1.0.2'
-//    compile 'org.igniterealtime.smack:smack-resolver-minidns:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-im:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-sasl-provided:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-resolver-minidns:4.1.0.2'
 }
 
 compileJava {

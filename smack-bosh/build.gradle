@@ -4,11 +4,11 @@ This API is considered beta quality."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(':smack-core')
-    compile 'org.igniterealtime.jbosh:jbosh:[0.8,0.9)'
-
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+//    compile project(':smack-core')
 //    compile 'org.igniterealtime.jbosh:jbosh:[0.8,0.9)'
+
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'org.igniterealtime.jbosh:jbosh:[0.8,0.9)'
 }
 
 apply from: '../smack-push.gradle'

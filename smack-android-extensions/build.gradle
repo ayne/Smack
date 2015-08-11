@@ -5,11 +5,11 @@ Extra Smack extensions for Android."""
 // sourceSet.test of the core subproject
 dependencies {
     apply plugin: 'java'
-    compile project(':smack-android')
-    compile project(':smack-extensions')
+//    compile project(':smack-android')
+//    compile project(':smack-extensions')
 
-//    compile 'org.igniterealtime.smack:smack-android:4.1.0.2'
-//    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-android:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.2'
 }
 
 compileJava {

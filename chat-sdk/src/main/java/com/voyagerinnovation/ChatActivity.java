@@ -33,11 +33,6 @@ public abstract class ChatActivity extends ActionBarActivity {
             if(!mChatService.isConnected()){
                 mChatService.connect();
             }
-            else{
-                if(!mChatService.isAuthenticated()){
-                    mChatService.authenticate();
-                }
-            }
         }
     };
 

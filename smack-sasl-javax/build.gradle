@@ -4,8 +4,10 @@ Use javax.security.sasl for SASL."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(path: ':smack-core')
-	testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+//./    compile project(path: ':smack-core')
+//	testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 
-// /   compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+   compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+
+    apply from: '../smack-push.gradle'
 }

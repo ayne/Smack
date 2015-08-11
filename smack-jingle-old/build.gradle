@@ -4,17 +4,17 @@ Warning: This API is beta, outdated and currenlty unmaintained."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(':smack-core')
-    compile project(':smack-extensions')
-    compile 'javax.media:jmf:2.1.1e'
-    compile files('libs/jspeex-0.9.7-jfcom.jar', 'libs/jstun.jar', 'libs/Speex.jar')
-    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
-
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
-//    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.2'
+//    compile project(':smack-core')
+//    compile project(':smack-extensions')
 //    compile 'javax.media:jmf:2.1.1e'
 //    compile files('libs/jspeex-0.9.7-jfcom.jar', 'libs/jstun.jar', 'libs/Speex.jar')
-////    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+//    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
+
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-extensions:4.1.0.2'
+    compile 'javax.media:jmf:2.1.1e'
+    compile files('libs/jspeex-0.9.7-jfcom.jar', 'libs/jstun.jar', 'libs/Speex.jar')
+//    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
 
 apply from: '../smack-push.gradle'

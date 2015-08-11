@@ -5,11 +5,11 @@ javax.naming API (e.g. Android)."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(path: ':smack-core')
-    compile 'dnsjava:dnsjava:[2.1,2.2)'
-
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+//    compile project(path: ':smack-core')
 //    compile 'dnsjava:dnsjava:[2.1,2.2)'
+
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'dnsjava:dnsjava:[2.1,2.2)'
 }
 
 apply from: '../smack-push.gradle'

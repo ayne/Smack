@@ -17,16 +17,16 @@
 
 package org.jivesoftware.smack;
 
+import org.jivesoftware.smack.packet.PlainStreamElement;
+import org.jivesoftware.smack.packet.Stanza;
+import org.jivesoftware.smack.packet.TopLevelStreamElement;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.packet.PlainStreamElement;
-import org.jivesoftware.smack.packet.TopLevelStreamElement;
 
 /**
  * A dummy implementation of {@link XMPPConnection}, intended to be used during
@@ -70,6 +70,11 @@ public class DummyConnection extends AbstractXMPPConnection {
                         + config.getServiceName()
                         + "/"
                         + (config.getResource() != null ? config.getResource() : "Test");
+    }
+
+    @Override
+    public String getTts(){
+        return null;
     }
 
     @Override
@@ -129,6 +134,16 @@ public class DummyConnection extends AbstractXMPPConnection {
             System.out.println("[SEND]: " + element.toXML());
         }
         queue.add(element);
+    }
+
+    @Override
+    public boolean isRosterEnabled() {
+        return false;
+    }
+
+    @Override
+    public String getToken() {
+        return null;
     }
 
     @Override

@@ -287,6 +287,9 @@ public class ChatService extends Service implements ConnectionListener,
     }
 
     public void disconnect() {
+        if(chatReceivedListener != null){
+            chatReceivedListener.onDisconnecting();
+        }
         new Thread() {
             @Override
             public void run() {
@@ -296,25 +299,6 @@ public class ChatService extends Service implements ConnectionListener,
         }.start();
     }
 
-    public void authenticate() {
-        Timber.d("do authenticate manually");
-//        if (yapToken != null) {
-//            loginXyap("test1", yapToken);
-//        } else {
-//            loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
-//        }
-        //u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis
-        // /DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y
-
-        //loginPlain("test1" + Environment.IM_SUFFIX, "vvtest1vv");
-        //loginPlain(jid, password);
-
-//        loginXyap("test1", "u49CByVnYkzw2NerzAIRIoj+8q9C5QQRdGjIqLtRIuJ6m" +
-//                "/LWEEGS0dqzXP6jixUOTIkDZEb/0E/ZzGEzDRcRis
-// /DTicAZ8vq9myQj3rsl06XlApP7hrR1a4VTe6Y");
-    }
-
-
     @Override
     public boolean accept(Stanza stanza) {
         Timber.i("Stanza " + stanza.toXML().toString());
@@ -322,6 +306,10 @@ public class ChatService extends Service implements ConnectionListener,
     }
 
 
+    /**
+     * Method to set the ChatReceivedListener for this service.
+     * @param chatReceivedListener ChatReceivedListener
+     */
     public void setOnChatReceivedListener(ChatReceivedListener chatReceivedListener) {
         this.chatReceivedListener = chatReceivedListener;
     }
@@ -379,6 +367,9 @@ public class ChatService extends Service implements ConnectionListener,
     @Override
     public void connectionClosed() {
         Timber.d("connection closed");
+        if(chatReceivedListener != null){
+            chatReceivedListener.onDisconnected();
+        }
     }
 
     @Override
@@ -389,6 +380,11 @@ public class ChatService extends Service implements ConnectionListener,
             Timber.d("Stream conflict error");
             if(chatReceivedListener != null){
                 chatReceivedListener.onAuthenticationFailed();
+            }
+        }
+        else{
+            if(chatReceivedListener != null){
+                chatReceivedListener.onDisconnected();
             }
         }
 

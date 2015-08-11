@@ -4,11 +4,11 @@ Allow to compress the XMPP stream with help of jzlib."""
 
 dependencies {
     apply plugin: 'java'
-    compile project(path: ':smack-core')
-    compile 'com.jcraft:jzlib:[1.1,1.2)'
-
-//    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+//    compile project(path: ':smack-core')
 //    compile 'com.jcraft:jzlib:[1.1,1.2)'
+
+    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'com.jcraft:jzlib:[1.1,1.2)'
 }
 
 apply from: '../smack-push.gradle'
