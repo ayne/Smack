@@ -250,7 +250,6 @@ public class VGCMessageManager {
                     inviter, String reason, String password, Message message) {
                 Timber.d("inviter: " + inviter + " |to: " + room);
                 joinRoom(username, room.getRoom());
-                //TODO add notification util
             }
         });
     }

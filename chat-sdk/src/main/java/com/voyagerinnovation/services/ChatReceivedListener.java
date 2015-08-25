@@ -1,6 +1,7 @@
 package com.voyagerinnovation.services;
 
 import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smackx.xdata.FormField;
@@ -80,9 +81,19 @@ public interface ChatReceivedListener {
 
     /**
      * Invoked when a message of type error is received.
-     * @param message The error message.
+     * @param message The error message. Typical babble error codes that need to be handled:
+     *                error code 406 - current user not occupant of room
+     *                error code 404 - user has left the room
      */
     public void onErrorMessageReceived(Message message);
+
+    /**
+     * Invoked when a message of type error is received.
+     * @param iq The iq of type error. Typical Babble IQ error that needs to be handled:
+     *           403,404 - user is not a member of the VGC group. In Babble, this VGC group
+     *           must be deleted in db.
+     */
+    public void onErrorIQReceived(IQ iq);
 
     /**
      * Invoked when a p2p chat (type chat) is received
@@ -399,8 +410,8 @@ public interface ChatReceivedListener {
 
     /**
      * Invoked when an ArchiveResultIQ is received.
-     * @param archiveResultIQ The ArchiveResultIQ whihc contains the endpoint (http url)
-     *                        where the entire arhive of the user can be downloaded.
+     * @param archiveResultIQ The ArchiveResultIQ which contains the endpoint (http url)
+     *                        where the entire archive of the user can be downloaded.
      */
     public void onArchiveResultReceived(ArchiveResultIQ archiveResultIQ);
 }

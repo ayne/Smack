@@ -78,31 +78,12 @@ public class StanzaParser {
             }
 
         } else if (packet instanceof ArchiveResultIQ) {
-            //TODO
             Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
             chatReceivedListener.onArchiveResultReceived((ArchiveResultIQ) packet);
-//            String endpoint = iq.getEndpoint();
-//            String count = iq.getCount();
-//
-//            if (endpoint != null || count != null) {
-//                // then this is a successful iq of archive
-//                preferencesHelper.setFRM("0");
-//            }
-
-//                TODO parse message archive from API
-//                if(endpoint != null){
-//                    Intent intent = new Intent(this, MessageArchiveIntentService.class);
-//                    intent.putExtra(MessageArchiveIntentService.KEY_ENDPOINT, endpoint);
-//                    startService(intent);
-//                }
         } else if (packet instanceof IQ) {
             IQ iq = (IQ) packet;
-            if ("error".equals(iq.getType().toString())) {
-                if (iq.getError().toString().contains("403") || iq.getError().toString().contains
-                        ("404")) {
-                    Timber.d("delete start");
-                    //TODO delete all entry of this vgc group
-                }
+            if (IQ.Type.error.equals(iq.getType().toString())) {
+                chatReceivedListener.onErrorIQReceived(iq);
             }
 
         } else if (packet instanceof Route) {
@@ -131,23 +112,21 @@ public class StanzaParser {
      * LocationAttachmentProcessor, PlainMessageProcessor, StickerAttachmentProcessor,
      * VCardAttachmentProcessor, Group Subject Change (VGCParser.processGroupSubjectChangePacket)
      *
-     * @param messagePacket
+     * @param message
      * @param isRoute
      */
-    private static void identifyMessagePacket(Message messagePacket, XMPPTCPConnection
-            xmpptcpConnection,
-                                              ChatReceivedListener chatReceivedListener, boolean
-                                                      isRoute) {
+    private static void identifyMessagePacket(Message message, XMPPTCPConnection
+            xmpptcpConnection, ChatReceivedListener chatReceivedListener, boolean isRoute) {
 
-        String from[] = messagePacket.getFrom().split("/");
-        String ts = messagePacket.getTS();
+        String from[] = message.getFrom().split("/");
+        String ts = message.getTS();
 
 
         String currentTimeDate = "" + System.currentTimeMillis();
-        DelayInformation delayInfo = (DelayInformation) messagePacket
+        DelayInformation delayInfo = (DelayInformation) message
                 .getExtension(Constants.JABBERXDELAY);
 
-        String nickname = messagePacket.getNickname();
+        String nickname = message.getNickname();
         if (nickname != null) {
             nickname = Html.fromHtml(nickname).toString();
         }
@@ -156,7 +135,7 @@ public class StanzaParser {
             currentTimeDate = "" + delayInfo.getStamp().getTime();
         }
 
-        DataForm form = (DataForm) messagePacket
+        DataForm form = (DataForm) message
                 .getExtension(Constants.JABBERXDATA);
 
         if (form != null) {
@@ -164,34 +143,34 @@ public class StanzaParser {
 
             for (FormField field : form.getFields()) {
                 if (Constants.VCARD.equals(field.getVariable())) {
-                    processVCardAttachment(messagePacket, field, chatReceivedListener, isRoute);
+                    processVCardAttachment(message, field, chatReceivedListener, isRoute);
                 } else if (Constants.ATTACHMENT.equals(field
                         .getVariable())) {
-                    processFileAttachment(messagePacket, field, chatReceivedListener, isRoute);
+                    processFileAttachment(message, field, chatReceivedListener, isRoute);
                 } else if (Constants.LOCATION.equals(field
                         .getVariable())) {
-                    processLocationAttachment(messagePacket, field, chatReceivedListener, isRoute);
+                    processLocationAttachment(message, field, chatReceivedListener, isRoute);
                 } else if (Constants.STICKER.equals(field
                         .getVariable())) {
-                    processStickerAttachment(messagePacket, field, chatReceivedListener, isRoute);
+                    processStickerAttachment(message, field, chatReceivedListener, isRoute);
                 } else if (Constants.THUMBNAIL.equals(field
                         .getVariable())) {
-                    processFileThumbnail(messagePacket, field);
+                    processFileThumbnail(message, field);
                 }
             }
 
         } else {
-            if (!TextUtils.isEmpty(messagePacket.getSubject())) {
-                chatReceivedListener.onVGCSubjectChanged(messagePacket);
+            if (!TextUtils.isEmpty(message.getSubject())) {
+                chatReceivedListener.onVGCSubjectChanged(message);
             } else {
                 // plain String message body
-                processPlainMessage(messagePacket, chatReceivedListener, isRoute);
+                processPlainMessage(message, chatReceivedListener, isRoute);
             }
         }
 
         // DO NOT REMOVE!!! THIS IS FOR DELIVERING DISPLAYED NOTIFICATION ON
         // TYPE CHAT MESSAGES
-        processDeliveredMessage(xmpptcpConnection, messagePacket);
+        processDeliveredMessage(xmpptcpConnection, chatReceivedListener, message);
 
     }
 
@@ -201,103 +180,103 @@ public class StanzaParser {
      * Note that when the image has been generated it will be persisted in phone's
      * external storage.
      *
-     * @param messagePacket
+     * @param message
      * @param field
      */
-    private static void processFileThumbnail(Message messagePacket, FormField field) {
+    private static void processFileThumbnail(Message message, FormField field) {
 
         for (String value : field.getValues()) {
             byte[] decodedString = Base64.decode(value, Base64.DEFAULT);
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString,
                     0, decodedString.length);
             BabbleImageProcessorUtil.persistThumbnail(decodedByte,
-                    messagePacket.getStanzaId());
+                    message.getStanzaId());
             // ThumbnailUtil.getInstance().persistThumbnail(decodedByte,
             // messagePacket.getPacketID());
         }
     }
 
 
-    public static void processFileAttachment(Message messagePacket, FormField formField,
+    public static void processFileAttachment(Message message, FormField formField,
                                              ChatReceivedListener
-            chatReceivedListener,
+                                                     chatReceivedListener,
                                              boolean isRoute) {
 
-        if (messagePacket.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatFileReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_chat) {
-            chatReceivedListener.onAnonymousChatFileReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.vgc) {
-            chatReceivedListener.onVGCChatFileReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_vgc) {
-            chatReceivedListener.onAnonymousVGCChatFileReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatFileReceived(messagePacket, formField);
-        } else if (messagePacket.getType() == Message.Type.secret) {
-            chatReceivedListener.onSecretChatFileReceived(messagePacket, formField, isRoute);
+        if (message.getType() == Message.Type.chat) {
+            chatReceivedListener.onChatFileReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_chat) {
+            chatReceivedListener.onAnonymousChatFileReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.vgc) {
+            chatReceivedListener.onVGCChatFileReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_vgc) {
+            chatReceivedListener.onAnonymousVGCChatFileReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.groupchat) {
+            chatReceivedListener.onPublicChatFileReceived(message, formField);
+        } else if (message.getType() == Message.Type.secret) {
+            chatReceivedListener.onSecretChatFileReceived(message, formField, isRoute);
         }
 
     }
 
 
-    private static void processVCardAttachment(Message messagePacket, FormField formField,
+    private static void processVCardAttachment(Message message, FormField formField,
                                                ChatReceivedListener chatReceivedListener, boolean
                                                        isRoute) {
-        if (messagePacket.getType() == Message.Type.chat) {
-            //TODO onChatReceived(isRoute)
-            chatReceivedListener.onChatVCFReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret) {
-            //TODO onSecretChatReceived(isRoute)
-            chatReceivedListener.onSecretChatVCFReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_chat) {
-            chatReceivedListener.onAnonymousChatVCFReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.vgc) {
-            chatReceivedListener.onVGCChatVCFReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_vgc) {
-            chatReceivedListener.onAnonymousVGCChatVCFReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatVCFReceived(messagePacket, formField);
+        if (message.getType() == Message.Type.chat) {
+            chatReceivedListener.onChatVCFReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret) {
+            chatReceivedListener.onSecretChatVCFReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_chat) {
+            chatReceivedListener.onAnonymousChatVCFReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.vgc) {
+            chatReceivedListener.onVGCChatVCFReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_vgc) {
+            chatReceivedListener.onAnonymousVGCChatVCFReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.groupchat) {
+            chatReceivedListener.onPublicChatVCFReceived(message, formField);
         }
 
     }
 
-    public static void processLocationAttachment(Message messagePacket, FormField formField,
+    public static void processLocationAttachment(Message message, FormField formField,
                                                  ChatReceivedListener
-            chatReceivedListener,
+                                                         chatReceivedListener,
                                                  boolean isRoute) {
 
-        if (messagePacket.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatLocationReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_chat) {
-            chatReceivedListener.onAnonymousChatLocationReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.vgc) {
-            chatReceivedListener.onVGCChatLocationReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_vgc) {
-            chatReceivedListener.onAnonymousVGCChatLocationReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatLocationReceived(messagePacket, formField);
-        } else if (messagePacket.getType() == Message.Type.secret) {
-            chatReceivedListener.onSecretChatLocationReceived(messagePacket, formField, isRoute);
+        if (message.getType() == Message.Type.chat) {
+            chatReceivedListener.onChatLocationReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_chat) {
+            chatReceivedListener.onAnonymousChatLocationReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.vgc) {
+            chatReceivedListener.onVGCChatLocationReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_vgc) {
+            chatReceivedListener.onAnonymousVGCChatLocationReceived(message, formField,
+                    isRoute);
+        } else if (message.getType() == Message.Type.groupchat) {
+            chatReceivedListener.onPublicChatLocationReceived(message, formField);
+        } else if (message.getType() == Message.Type.secret) {
+            chatReceivedListener.onSecretChatLocationReceived(message, formField, isRoute);
         }
 
     }
 
-    public static void processStickerAttachment(Message messagePacket, FormField formField,
+    public static void processStickerAttachment(Message message, FormField formField,
                                                 ChatReceivedListener
-            chatReceivedListener, boolean isRoute) {
+                                                        chatReceivedListener, boolean isRoute) {
 
-        if (messagePacket.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatStickerReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.vgc) {
-            chatReceivedListener.onVGCChatStickerReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret_vgc) {
-            chatReceivedListener.onAnonymousVGCChatStickerReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatStickerReceived(messagePacket, formField);
-        } else if (messagePacket.getType() == Message.Type.secret_chat) {
-            chatReceivedListener.onAnonymousChatStickerReceived(messagePacket, formField, isRoute);
-        } else if (messagePacket.getType() == Message.Type.secret) {
-            chatReceivedListener.onSecretChatStickerReceived(messagePacket, formField, isRoute);
+        if (message.getType() == Message.Type.chat) {
+            chatReceivedListener.onChatStickerReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.vgc) {
+            chatReceivedListener.onVGCChatStickerReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret_vgc) {
+            chatReceivedListener.onAnonymousVGCChatStickerReceived(message, formField,
+                    isRoute);
+        } else if (message.getType() == Message.Type.groupchat) {
+            chatReceivedListener.onPublicChatStickerReceived(message, formField);
+        } else if (message.getType() == Message.Type.secret_chat) {
+            chatReceivedListener.onAnonymousChatStickerReceived(message, formField, isRoute);
+        } else if (message.getType() == Message.Type.secret) {
+            chatReceivedListener.onSecretChatStickerReceived(message, formField, isRoute);
         }
 
     }
@@ -326,46 +305,31 @@ public class StanzaParser {
                         ());
             }
         } else if (message.getType() == Message.Type.error) {
-            Timber.e("I got an error");
-//            TODO if (message.getError() != null) {
-//                if (message.getError().getCode() == 406) {
-//                    Log.d(TAG, "############## code  error 406");
-//                    VGCParser.processErrorPacket(context, packetId, from,
-//                            message.getError().getMessage(), currentTimeDate, status, subject,
-//                            serverTime,
-//                            MultiUserMessagesTable.MEMBER_PRESENCE);
-//                }
-//            }
+            chatReceivedListener.onErrorMessageReceived(message);
         }
 
     }
 
 
     public static void processDeliveredMessage(XMPPTCPConnection xmpptcpConnection,
-                                               Message messagePacket) {
-        if (messagePacket.getType() == Message.Type.chat ||
-                messagePacket.getType() == Message.Type.secret
-                || messagePacket.getType() == Message.Type.secret_chat) {
+                                               ChatReceivedListener chatReceivedListener,
+                                               Message message) {
+        if (message.getType() == Message.Type.chat ||
+                message.getType() == Message.Type.secret
+                || message.getType() == Message.Type.secret_chat) {
             MessageEventManager msgEventMgr = new MessageEventManager(
                     xmpptcpConnection);
 
             try {
                 msgEventMgr.sendDisplayedNotification(
-                        messagePacket.getFrom(),
-                        messagePacket.getStanzaId());
+                        message.getFrom(),
+                        message.getStanzaId());
             } catch (SmackException.NotConnectedException e) {
                 e.printStackTrace();
             }
 
-        } else if (messagePacket.getType() == Message.Type.error) {
-            //TODO
-//            if (messagePacket.getError().getCode() == 406) {
-//                // current user not occupant of room
-//
-//            } else if (messagePacket.getError().getCode() == 404) {
-//                // recipient has left the room
-//
-//            }
+        } else if (message.getType() == Message.Type.error) {
+            chatReceivedListener.onErrorMessageReceived(message);
         }
     }
 
