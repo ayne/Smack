@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.voyagerinnovation.environment.Environment;
 import com.voyagerinnovation.services.managers.MUCMessageManager;
@@ -36,8 +37,6 @@ import org.jivesoftware.smackx.iqlast.LastActivityManager;
 import java.io.IOException;
 import java.util.Map;
 
-import timber.log.Timber;
-
 //import org.jivesoftware.smack.SmackAndroid;
 
 /**
@@ -47,6 +46,7 @@ import timber.log.Timber;
 public class ChatService extends Service implements ConnectionListener,
         StanzaListener, StanzaFilter {
 
+    private static final String TAG = ChatService.class.getSimpleName();
 
     public XMPPTCPConnection xmpptcpConnection;
     private final IBinder mBinder = new LocalBinder();
@@ -76,7 +76,7 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void onCreate() {
-        Timber.i("New ChatService instance created");
+        Log.i(TAG, "New ChatService instance created");
         super.onCreate();
         configureConnection();
 
@@ -235,7 +235,7 @@ public class ChatService extends Service implements ConnectionListener,
                 if (saslErrorException.getSASLFailure() != null) {
                     if (SASLError.not_authorized == saslErrorException.getSASLFailure()
                             .getSASLError()) {
-                        Timber.e("Not authorized. Please login again!");
+                        Log.e(TAG, "Not authorized. Please login again!");
                         if (chatReceivedListener != null) {
                             chatReceivedListener.onNotAuthorized();
                         }
@@ -324,7 +324,7 @@ public class ChatService extends Service implements ConnectionListener,
         new Thread() {
             @Override
             public void run() {
-                Timber.d("Connecting... is connected " + xmpptcpConnection.isConnected());
+                Log.d(TAG, "Connecting... is connected " + xmpptcpConnection.isConnected());
                 try {
                     if (!xmpptcpConnection.isConnected()) {
                         xmpptcpConnection.connect();
@@ -348,7 +348,7 @@ public class ChatService extends Service implements ConnectionListener,
         new Thread() {
             @Override
             public void run() {
-                Timber.d("Disconnecting...");
+                Log.d(TAG, "Disconnecting...");
                 xmpptcpConnection.disconnect();
             }
         }.start();
@@ -356,7 +356,6 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public boolean accept(Stanza stanza) {
-        Timber.i("Stanza " + stanza.toXML().toString());
         return true;
     }
 
@@ -371,7 +370,6 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
-        Timber.d("Stanza " + packet.toXML().toString());
 //        if (packet instanceof ArchiveResultIQ) {
 //            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
 //        }
@@ -384,7 +382,7 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void connected(final XMPPConnection connection) {
-        Timber.d("Connected");
+        Log.d(TAG, "Connected");
         if (chatReceivedListener != null) {
             chatReceivedListener.onConnected(connection);
         }
@@ -406,8 +404,6 @@ public class ChatService extends Service implements ConnectionListener,
         }
 
         yapToken = connection.getToken();
-        Timber.d("Authenticated xyaptoken is " + yapToken);
-        Timber.d("Authenticated tts is " + connection.getTts());
         ArchiveIQ archiveIq = new ArchiveIQ("0", "0", "0");
         archiveIq.setTo(Environment.IM_ARCHIVE_HOST);
         archiveIq.setStanzaId(null);
@@ -421,7 +417,7 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void connectionClosed() {
-        Timber.d("connection closed");
+        Log.d(TAG, "connection closed");
         if(chatReceivedListener != null){
             chatReceivedListener.onDisconnected();
         }
@@ -429,9 +425,9 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void connectionClosedOnError(Exception e) {
-        Timber.d("connectionClosedOnError " + e.getMessage());
+        Log.d(TAG, "connectionClosedOnError " + e.getMessage());
         if ("stream:error (conflict) text: Replaced by new connection".equals(e.getMessage())) {
-            Timber.d("Stream conflict error");
+            Log.d(TAG, "Stream conflict error");
             if(chatReceivedListener != null){
                 chatReceivedListener.onAuthenticationFailed();
             }
@@ -456,7 +452,7 @@ public class ChatService extends Service implements ConnectionListener,
 
     @Override
     public void reconnectionFailed(Exception e) {
-        Timber.d("reconnected failed ");
+        Log.d(TAG, "reconnection failed ");
     }
 
     /**

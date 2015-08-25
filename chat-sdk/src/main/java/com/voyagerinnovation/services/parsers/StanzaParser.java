@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 
 import com.voyagerinnovation.constants.Constants;
 import com.voyagerinnovation.environment.Environment;
@@ -24,12 +25,12 @@ import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jivesoftware.smackx.xevent.MessageEventManager;
 
-import timber.log.Timber;
-
 /**
  * Created by charmanesantiago on 4/13/15.
  */
 public class StanzaParser {
+
+    private static final String TAG = StanzaParser.class.getSimpleName();
 
     /**
      * Parses packet by identifying its type i.e Message, IQ or Route
@@ -78,7 +79,7 @@ public class StanzaParser {
             }
 
         } else if (packet instanceof ArchiveResultIQ) {
-            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
+//            Timber.d("Archive endpoint = " + ((ArchiveResultIQ) packet).getEndpoint());
             chatReceivedListener.onArchiveResultReceived((ArchiveResultIQ) packet);
         } else if (packet instanceof IQ) {
             IQ iq = (IQ) packet;
@@ -94,11 +95,11 @@ public class StanzaParser {
             } else if (Message.Type.secret.equals(message.getType())) {
                 //Ignore. Since this is a secret (ticking) message
                 //and history must not be recovered.
-                Timber.w("secret archive recovered but ignored");
+                Log.w(TAG, "secret archive recovered but ignored");
             } else {
                 String to = message.getTo();
                 if (to != null && to.contains(Environment.IM_CHATROOM_SUFFIX)) {
-                    Timber.w("private msg from chatroom archive recovered but ignored");
+                    Log.w(TAG, "private msg from chatroom archive recovered but ignored");
                 } else {
                     identifyMessagePacket(message, xmpptcpConnection, chatReceivedListener, true);
                 }

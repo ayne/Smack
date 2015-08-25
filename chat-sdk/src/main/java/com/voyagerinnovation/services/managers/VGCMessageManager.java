@@ -29,8 +29,6 @@ import org.jivesoftware.smackx.xdata.packet.DataForm;
 
 import java.util.List;
 
-import timber.log.Timber;
-
 /**
  * Created by charmanesantiago on 4/12/15.
  */
@@ -181,7 +179,7 @@ public class VGCMessageManager {
      * @Return List<String> of joined rooms.
      */
     public List<String> getJoinedRooms(){
-        Timber.d("getting joined rooms...");
+//        Timber.d("getting joined rooms...");
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.
                 getInstanceFor(xmpptcpConnection);
         try {
@@ -248,7 +246,7 @@ public class VGCMessageManager {
             @Override
             public void invitationReceived(XMPPConnection conn, MultiUserChat room, String
                     inviter, String reason, String password, Message message) {
-                Timber.d("inviter: " + inviter + " |to: " + room);
+//                Timber.d("inviter: " + inviter + " |to: " + room);
                 joinRoom(username, room.getRoom());
             }
         });
