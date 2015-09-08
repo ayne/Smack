@@ -83,7 +83,8 @@ public class ChatService extends Service implements ConnectionListener,
     }
 
     public void configureConnection(boolean isDebuggable, String host, int port,
-                                    String serviceName, boolean sendPresence){
+                                    String serviceName, boolean sendPresence,
+                                    ConnectionConfiguration.SecurityMode securityMode){
         SmackConfiguration.DEBUG = isDebuggable;
 
 //        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
@@ -109,7 +110,7 @@ public class ChatService extends Service implements ConnectionListener,
                 .setPort(port)
                 .setServiceName(serviceName)
                 .setSendPresence(sendPresence)
-                .setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible)
+                .setSecurityMode(securityMode)
                 .setSocketFactory(new DummySSLSocketFactory())
                 .setDebuggerEnabled(isDebuggable)
                 .build();
@@ -163,7 +164,7 @@ public class ChatService extends Service implements ConnectionListener,
                 .setPort(Environment.IM_PORT)
                 .setServiceName(Environment.IM_SERVICE_NAME)
                 .setSendPresence(true)
-                .setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible)
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                 .setSocketFactory(new DummySSLSocketFactory())
                 .setDebuggerEnabled(Environment.IS_DEBUG)
                 .build();

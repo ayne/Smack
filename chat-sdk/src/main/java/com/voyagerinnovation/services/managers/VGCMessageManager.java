@@ -176,14 +176,18 @@ public class VGCMessageManager {
 
     /**
      * Method to get joined rooms.
+     * @Param host host name (i.e vgc.babbleim.com)
      * @Return List<String> of joined rooms.
      */
-    public List<String> getJoinedRooms(){
+    public List<String> getJoinedRooms(String host){
 //        Timber.d("getting joined rooms...");
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.
                 getInstanceFor(xmpptcpConnection);
         try {
-            return multiUserChatManager.getJoinedRooms("vgc.babbleim.com");
+            if(TextUtils.isEmpty(host)){
+                host = "vgc.babbleim.com";
+            }
+            return multiUserChatManager.getJoinedRooms(host);
         } catch (SmackException.NoResponseException e) {
             e.printStackTrace();
         } catch (XMPPException.XMPPErrorException e) {
