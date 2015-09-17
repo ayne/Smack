@@ -695,6 +695,11 @@ public final class Message extends Stanza implements TypedCloneable<Message> {
         chat,
 
         /**
+         * Use this to send IP-CS message.
+         */
+        sms,
+
+        /**
          * Chat message sent to a groupchat server for group chats.
          */
         groupchat,

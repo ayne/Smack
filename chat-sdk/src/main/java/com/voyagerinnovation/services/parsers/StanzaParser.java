@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.voyagerinnovation.constants.Constants;
 import com.voyagerinnovation.environment.Environment;
+import com.voyagerinnovation.model.Event;
 import com.voyagerinnovation.services.ChatReceivedListener;
 import com.voyagerinnovation.util.BabbleImageProcessorUtil;
 
@@ -24,6 +25,12 @@ import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jivesoftware.smackx.xevent.MessageEventManager;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Created by charmanesantiago on 4/13/15.
@@ -332,6 +339,39 @@ public class StanzaParser {
         } else if (message.getType() == Message.Type.error) {
             chatReceivedListener.onErrorMessageReceived(message);
         }
+    }
+
+
+    public static Event.Type getEventType(Message message) {
+        try {
+            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            XmlPullParser xpp = factory.newPullParser();
+            xpp.setInput(new StringReader(message.getExtension(
+                    Constants.JABBERXEVENT).toXML().toString()));
+            int eventType = xpp.getEventType();
+            String eventTag = "";
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    String tag = xpp.getName();
+                    if ("de".equals(tag)) {
+                        return Event.Type.delivered;
+                    } else if ("di".equals(tag)) {
+                        return Event.Type.displayed;
+                    } else if ("o".equals(tag)) {
+                        return Event.Type.offline;
+                    } else if ("sms".equals(tag)) {
+                        return Event.Type.sms;
+                    }
+                }
+                eventType = xpp.next();
+            }
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Event.Type.unknown;
     }
 
 

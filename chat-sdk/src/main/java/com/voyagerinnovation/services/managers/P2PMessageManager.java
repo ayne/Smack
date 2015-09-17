@@ -59,6 +59,40 @@ public class P2PMessageManager {
         return message;
     }
 
+
+    /**
+     * Method to send message of type "sms" to a contact. (P2P)
+     *
+     * @param packetId     The packet id to be used in the message. Usually you should pass
+     *                     null here. But for the purpose of resending the same message, you
+     *                     can pass the id of the said message.
+     * @param body         The body or message content of an XMPP message.
+     * @param toJid        The jid of the receiving party.
+     * @param senderMsisdn The msisdn of the sender (logged in user). If null, no msisdn will be
+     *                     inserted.
+     * @param senderName   The name of the sender (logged in user). If null, no name will be
+     *                     inserted.
+     * @return Message          The actual Message that was sent.
+     */
+    public Message sendSms(String packetId, String body, String toJid, String senderMsisdn,
+                               String senderName) {
+        Message message = new Message();
+        if (packetId != null) {
+            message.setStanzaId(packetId);
+        }
+        insertMsisdnAndName(message, senderMsisdn, senderName);
+        message.setBody(body);
+        message.setTo(toJid);
+        message.setType(Message.Type.sms);
+        message.setThread(null);
+        try {
+            xmpptcpConnection.sendStanza(message);
+        } catch (SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+        return message;
+    }
+
     /**
      * Method to send an IP to CS message via XMPP
      *
