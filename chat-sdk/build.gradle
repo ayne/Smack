@@ -38,7 +38,7 @@ dependencies {
     compile 'org.igniterealtime.smack:smack-android-extensions:4.1.0.2'
     compile 'org.igniterealtime.smack:smack-core:4.1.0.3'
     compile 'org.igniterealtime.smack:smack-tcp:4.1.0.2'
-    compile 'org.igniterealtime.smack:smack-legacy:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-legacy:4.1.0.3'
 //
 //
 //    compile 'org.igniterealtime.smack:smack-bosh:4.1.0.2'

@@ -55,13 +55,13 @@ import java.util.List;
  */
 public class MessageEvent implements ExtensionElement {
 
-    public static final String NAMESPACE = "jabber:x:event";
+    public static final String NAMESPACE = "j:x:event";
     public static final String ELEMENT = "x";
 
-    public static final String OFFLINE = "offline";
+    public static final String OFFLINE = "0";
     public static final String COMPOSING = "composing";
-    public static final String DISPLAYED = "displayed";
-    public static final String DELIVERED = "delivered";
+    public static final String DISPLAYED = "di";
+    public static final String DELIVERED = "de";
     public static final String CANCELLED = "cancelled";
 
     private boolean offline = false;

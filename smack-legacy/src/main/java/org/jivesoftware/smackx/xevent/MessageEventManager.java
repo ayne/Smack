@@ -231,6 +231,7 @@ public class MessageEventManager extends Manager {
     public void sendDisplayedNotification(String to, String packetID) throws NotConnectedException {
         // Create the message to send
         Message msg = new Message(to);
+        msg.setStanzaId(packetID);
         // Create a MessageEvent Package and add it to the message
         MessageEvent messageEvent = new MessageEvent();
         messageEvent.setDisplayed(true);
