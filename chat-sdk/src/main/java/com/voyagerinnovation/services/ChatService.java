@@ -83,7 +83,7 @@ public class ChatService extends Service implements ConnectionListener,
     }
 
     public void configureConnection(boolean isDebuggable, String host, int port,
-                                    String serviceName, boolean sendPresence,
+                                    String serviceName, String resource, boolean sendPresence,
                                     ConnectionConfiguration.SecurityMode securityMode){
         SmackConfiguration.DEBUG = isDebuggable;
 
@@ -109,6 +109,7 @@ public class ChatService extends Service implements ConnectionListener,
                 .setHost(host)
                 .setPort(port)
                 .setServiceName(serviceName)
+                .setResource(resource)
                 .setSendPresence(sendPresence)
                 .setSecurityMode(securityMode)
                 .setSocketFactory(new DummySSLSocketFactory())
@@ -163,6 +164,7 @@ public class ChatService extends Service implements ConnectionListener,
                 .setHost(Environment.IM_HOST)
                 .setPort(Environment.IM_PORT)
                 .setServiceName(Environment.IM_SERVICE_NAME)
+                .setResource(Environment.IM_RESOURCE)
                 .setSendPresence(true)
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                 .setSocketFactory(new DummySSLSocketFactory())
