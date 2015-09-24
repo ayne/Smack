@@ -10,9 +10,15 @@ public class XSKEYTokenMechanism extends SASLMechanism {
 
     public static final String MECHANISM_NAME = "X-SKEY-TOKEN";
 
+    private String resource;
+
+    public XSKEYTokenMechanism(String resource){
+        this.resource = resource;
+    }
+
     @Override
     protected void authenticateInternal(CallbackHandler cbh) throws SmackException {
-        connection.send(new SaslStreamElements.AuthMechanism(MECHANISM_NAME, this.password));
+        connection.send(new SaslStreamElements.AuthMechanism(MECHANISM_NAME, this.password, resource));
     }
 
     @Override

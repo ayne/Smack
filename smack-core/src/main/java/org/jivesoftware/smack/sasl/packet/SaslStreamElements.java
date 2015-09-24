@@ -38,11 +38,13 @@ public class SaslStreamElements {
 
         private final String mechanism;
         private final String authenticationText;
+        private String resource;
 
-        public AuthMechanism(String mechanism, String authenticationText) {
+        public AuthMechanism(String mechanism, String authenticationText, String resource) {
             this.mechanism = Objects.requireNonNull(mechanism, "SASL mechanism shouldn't be null.");
             this.authenticationText = StringUtils.requireNotNullOrEmpty(authenticationText,
                             "SASL authenticationText must not be null or empty (RFC6120 6.4.2)");
+            this.resource = resource;
         }
 
         @Override
@@ -52,10 +54,19 @@ public class SaslStreamElements {
             // XMPPTCPConnection and parsing of "Success"
             //("\" xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" resource=\"BA\" version=\"1\">") must
             //be included here
-            xml.halfOpenElement(ELEMENT).xmlnsAttribute(NAMESPACE).attribute("mechanism", mechanism)
-                    .attribute("resource", BABBLE_RESOURCE)
-                    .attribute("version", BABBLE_VERSION)
-                    .rightAngleBracket();
+            if(resource != null){
+                xml.halfOpenElement(ELEMENT).xmlnsAttribute(NAMESPACE).attribute("mechanism", mechanism)
+                        .attribute("resource", resource)
+                        .attribute("version", BABBLE_VERSION)
+                        .rightAngleBracket();
+            }
+            else{
+                xml.halfOpenElement(ELEMENT).xmlnsAttribute(NAMESPACE).attribute("mechanism", mechanism)
+                        .attribute("resource", BABBLE_RESOURCE)
+                        .attribute("version", BABBLE_VERSION)
+                        .rightAngleBracket();
+            }
+
             xml.optAppend(authenticationText);
             xml.closeElement(ELEMENT);
             return xml;

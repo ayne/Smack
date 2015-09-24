@@ -11,9 +11,16 @@ public class XYAPTokenMechanism extends SASLMechanism {
 
     public static final String MECHANISM_NAME = "X-YAP-TOKEN";
 
+    private String resource;
+
+    public XYAPTokenMechanism(String resource){
+        this.resource = resource;
+    }
+
     @Override
     protected void authenticateInternal(CallbackHandler cbh) throws SmackException {
-        connection.send(new SaslStreamElements.AuthMechanism(MECHANISM_NAME, this.password));
+        connection.send(new SaslStreamElements.AuthMechanism(MECHANISM_NAME, this.password,
+                this.resource));
     }
 
     @Override

@@ -187,7 +187,8 @@ public class SASLAuthentication {
         if (selectedMechanism != null) {
             currentMechanism = selectedMechanism;
             synchronized (this) {
-                currentMechanism.authenticate(connection.getHost(), connection.getServiceName(), cbh);
+                currentMechanism.authenticate(connection.getHost(), connection.getServiceName(),
+                        resource, cbh);
                 try {
                     // Wait until SASL negotiation finishes
                     wait(connection.getPacketReplyTimeout());
@@ -234,7 +235,7 @@ public class SASLAuthentication {
 
             synchronized (this) {
                 currentMechanism.authenticate(username, connection.getHost(),
-                                connection.getServiceName(), password);
+                                connection.getServiceName(), password, resource);
                 try {
                     // Wait until SASL negotiation finishes
                     wait(connection.getPacketReplyTimeout());
@@ -274,7 +275,7 @@ public class SASLAuthentication {
 
         // Wait until SASL negotiation finishes
         synchronized (this) {
-            currentMechanism.authenticate(null, null, null, "");
+            currentMechanism.authenticate(null, null, null, "", null);
             try {
                 wait(connection.getPacketReplyTimeout());
             }

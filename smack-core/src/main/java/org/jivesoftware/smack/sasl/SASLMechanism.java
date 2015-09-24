@@ -159,14 +159,15 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws SmackException If a network error occurs while authenticating.
      * @throws NotConnectedException 
      */
-    public final void authenticate(String username, String host, String serviceName, String password)
+    public final void authenticate(String username, String host, String serviceName, String password,
+                                   String resource)
                     throws SmackException, NotConnectedException {
         this.authenticationId = username;
         this.host = host;
         this.serviceName = serviceName;
         this.password = password;
         authenticateInternal();
-        authenticate();
+        authenticate(resource);
     }
 
     protected void authenticateInternal() throws SmackException {
@@ -182,17 +183,17 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
      * @throws SmackException
      * @throws NotConnectedException 
      */
-    public void authenticate(String host,String serviceName, CallbackHandler cbh)
+    public void authenticate(String host, String serviceName, String resource, CallbackHandler cbh)
                     throws SmackException, NotConnectedException {
         this.host = host;
         this.serviceName = serviceName;
         authenticateInternal(cbh);
-        authenticate();
+        authenticate(resource);
     }
 
     protected abstract void authenticateInternal(CallbackHandler cbh) throws SmackException;
 
-    private final void authenticate() throws SmackException, NotConnectedException {
+    private final void authenticate(String resource) throws SmackException, NotConnectedException {
         byte[] authenticationBytes = getAuthenticationText();
         String authenticationText;
         if (authenticationBytes != null) {
@@ -210,7 +211,7 @@ public abstract class SASLMechanism implements Comparable<SASLMechanism> {
             authenticationText = "=";
         }
         // Send the authentication to the server
-        connection.send(new AuthMechanism(getName(), authenticationText));
+        connection.send(new AuthMechanism(getName(), authenticationText, resource));
     }
 
     /**

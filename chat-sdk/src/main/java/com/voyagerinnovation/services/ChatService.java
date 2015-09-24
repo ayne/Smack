@@ -29,7 +29,6 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.sasl.SASLError;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.sasl.SASLMechanism;
-import org.jivesoftware.smack.sasl.provided.SASLPlainMechanism;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smackx.iqlast.LastActivityManager;
@@ -130,8 +129,8 @@ public class ChatService extends Service implements ConnectionListener,
                 SASLAuthentication.blacklistSASLMechanism(entry.getValue());
             }
         }
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism());
-        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism());
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(resource));
+        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism(resource));
 
 
         p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
@@ -185,8 +184,8 @@ public class ChatService extends Service implements ConnectionListener,
                 SASLAuthentication.blacklistSASLMechanism(entry.getValue());
             }
         }
-        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism());
-        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism());
+        SASLAuthentication.registerSASLMechanism(new XYAPTokenMechanism(Environment.IM_RESOURCE));
+        SASLAuthentication.registerSASLMechanism(new XSKEYTokenMechanism(Environment.IM_RESOURCE));
 
 
         p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
@@ -222,15 +221,14 @@ public class ChatService extends Service implements ConnectionListener,
      * @param jid      full jid of the user (i.e tes1@babbleim.com)
      * @param password password of the passed jid
      */
-    public void loginPlain(String jid, String password) {
+    public void loginPlain(String jid, String password, String resource) {
 
         SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.blacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(SASLMechanism.PLAIN);
 
         try {
-            xmpptcpConnection.login(jid, password,
-                    SASLPlainMechanism.NAME);
+            xmpptcpConnection.login(jid, password, resource);
         } catch (XMPPException e) {
             e.printStackTrace();
             if (e instanceof SASLErrorException) {
@@ -259,15 +257,14 @@ public class ChatService extends Service implements ConnectionListener,
      * @param yapToken The token (x-yap-token) to be used for logging in.
      *                 This is retrieved from <success></success> response after <auth></auth>
      */
-    public void loginXyap(String username, String yapToken) {
+    public void loginXyap(String username, String yapToken, String resource) {
 
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
         SASLAuthentication.blacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
 
         try {
-            xmpptcpConnection.login(username, yapToken,
-                    XYAPTokenMechanism.MECHANISM_NAME);
+            xmpptcpConnection.login(username, yapToken, resource);
         } catch (XMPPException e) {
             e.printStackTrace();
             if (e instanceof SASLErrorException) {
@@ -288,14 +285,13 @@ public class ChatService extends Service implements ConnectionListener,
         }
     }
 
-    public void loginSkey(String jid, String skey) {
+    public void loginSkey(String jid, String skey, String resource) {
 
         SASLAuthentication.blacklistSASLMechanism(SASLMechanism.PLAIN);
         SASLAuthentication.blacklistSASLMechanism(XYAPTokenMechanism.MECHANISM_NAME);
         SASLAuthentication.unBlacklistSASLMechanism(XSKEYTokenMechanism.MECHANISM_NAME);
         try {
-            xmpptcpConnection.login(jid, skey,
-                    XSKEYTokenMechanism.MECHANISM_NAME);
+            xmpptcpConnection.login(jid, skey, resource);
         } catch (XMPPException e) {
             e.printStackTrace();
             if (e instanceof SASLErrorException) {
