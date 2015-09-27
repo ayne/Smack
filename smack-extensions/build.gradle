@@ -13,10 +13,10 @@ dependencies {
 //    compile project(':smack-im')
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 
-    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-core:4.1.1.0'
     // Some implementations need APIs provided by smack-im,
     // e.g. message delivery receipts the roster
-    compile 'org.igniterealtime.smack:smack-im:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-im:4.1.1.0'
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
 

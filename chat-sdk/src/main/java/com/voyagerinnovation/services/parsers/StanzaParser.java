@@ -22,6 +22,7 @@ import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.delay.packet.DelayInformation;
+import org.jivesoftware.smackx.muc.packet.VGCUser;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jivesoftware.smackx.xevent.MessageEventManager;
@@ -47,7 +48,22 @@ public class StanzaParser {
     public static void processPacket(Stanza packet, XMPPTCPConnection xmpptcpConnection,
                                      ChatReceivedListener chatReceivedListener) {
         if (packet instanceof Presence) {
+
+            Log.d("StanzaParser", "stanza string " + packet.toXML().toString());
+
+            Presence presence = (Presence) packet;
             //TODO process presence
+            if (presence.getExtension(new VGCUser().getNamespace()) != null) {
+                Log.d("StanzaParser", "VGCUser <3 :)");
+                VGCUser vgcUser = (VGCUser) presence
+                        .getExtension(new VGCUser().getNamespace());
+                Log.d("StanzaParser", "mUser created");
+                Log.d("StanzaParser", "STATUS " + vgcUser.getStatus().toString());
+                Log.d("StanzaParser", "JID " + vgcUser.getItem().getJid());
+            }
+            else{
+                Log.d("StanzaParser", "not VGCUser");
+            }
         } else if (packet instanceof Message) {
 
             Message messagePacket = (Message) packet;

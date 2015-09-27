@@ -7,7 +7,7 @@ dependencies {
 //    compile project(path: ':smack-core')
 //    compile 'com.jcraft:jzlib:[1.1,1.2)'
 
-    compile 'org.igniterealtime.smack:smack-core:4.1.0.2'
+    compile 'org.igniterealtime.smack:smack-core:4.1.1.0'
     compile 'com.jcraft:jzlib:[1.1,1.2)'
 }
 

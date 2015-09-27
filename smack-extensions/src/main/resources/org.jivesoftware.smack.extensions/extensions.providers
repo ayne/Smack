@@ -89,6 +89,13 @@
         <className>org.jivesoftware.smackx.muc.provider.MUCUserProvider</className>
     </extensionProvider>
 
+    <!-- VGC User -->
+        <extensionProvider>
+            <elementName>x</elementName>
+            <namespace>vgc#user</namespace>
+            <className>org.jivesoftware.smackx.muc.provider.VGCUserProvider</className>
+        </extensionProvider>
+
     <!-- MUC Admin -->
     <iqProvider> 
         <elementName>query</elementName> 

@@ -554,7 +554,7 @@ public class PacketParserUtils {
             case XmlPullParser.START_TAG:
                 String elementName = parser.getName();
                 String namespace = parser.getNamespace();
-                LOGGER.log(Level.INFO, "###elementname " + elementName);
+                LOGGER.log(Level.INFO, "###elementname zzz " + elementName);
                 switch(elementName) {
 
                 case "status":
@@ -588,6 +588,7 @@ public class PacketParserUtils {
                     // Be extra robust: Skip PacketExtensions that cause Exceptions, instead of
                     // failing completely here. See SMACK-390 for more information.
                     try {
+                        LOGGER.log(Level.INFO, "### adding extension for name " + elementName + " namespace " + namespace );
                         PacketParserUtils.addExtensionElement(presence, parser, elementName, namespace);
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Failed to parse extension packet in Presence packet.", e);
@@ -941,8 +942,11 @@ public class PacketParserUtils {
         // See if a provider is registered to handle the extension.
         ExtensionElementProvider<ExtensionElement> provider = ProviderManager.getExtensionProvider(elementName, namespace);
         if (provider != null) {
+            LOGGER.log(Level.INFO, "### provider not null " + elementName);
                 return provider.parse(parser);
         }
+
+        LOGGER.log(Level.INFO, "### returning default provider. " + elementName);
 
         final int initialDepth = parser.getDepth();
         // No providers registered, so use a default extension.
