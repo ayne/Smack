@@ -32,6 +32,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Set;
 
 /**
  * Created by charmanesantiago on 4/13/15.
@@ -60,8 +61,28 @@ public class StanzaParser {
                 Log.d("StanzaParser", "mUser created");
                 Log.d("StanzaParser", "STATUS " + vgcUser.getStatus().toString());
                 Log.d("StanzaParser", "JID " + vgcUser.getItem().getJid());
-            }
-            else{
+
+                String jid = vgcUser.getItem().getJid();
+                String from = presence.getFrom();
+                if (from.contains("/")) from = from.split("/")[0];
+                Set<VGCUser.Status> setStatus = vgcUser.getStatus();
+                if (presence.isAvailable()) {
+                    if (setStatus.contains(VGCUser.Status.create(110))) {
+                        chatReceivedListener.onVGCUserJoined(presence, from, jid);
+                    }
+                } else {
+                    /**
+                     * In presence unavailable, status code 321 means the user was removed by
+                     * other user.
+                     * status code 110 means, the user removes itself to the group.
+                     */
+                    if (setStatus.contains(VGCUser.Status.create(110))) {
+                        chatReceivedListener.onVGCUserLeft(presence, from, jid);
+                    } else if (setStatus.contains(VGCUser.Status.create(321))) {
+                        chatReceivedListener.onVGCUserRemoved(presence, from, jid);
+                    }
+                }
+            } else {
                 Log.d("StanzaParser", "not VGCUser");
             }
         } else if (packet instanceof Message) {
@@ -80,9 +101,9 @@ public class StanzaParser {
                 chatReceivedListener.onEventReceived(messagePacket);
             }
 
-            if (messagePacket.getExtension(Constants.JABBERXCONFERENCE) != null) {
-                chatReceivedListener.onVGCInvitationReceived(messagePacket);
-            }
+//            if (messagePacket.getExtension(Constants.JABBERXCONFERENCE) != null) {
+//                chatReceivedListener.onVGCInvitationReceived(messagePacket);
+//            }
 
             if (messagePacket.getExtension(Constants.JABBERXDATA) != null) {
                 // Process Message Attachment

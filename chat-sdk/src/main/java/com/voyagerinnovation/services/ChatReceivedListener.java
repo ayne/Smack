@@ -3,6 +3,7 @@ package com.voyagerinnovation.services;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smackx.xdata.FormField;
 
@@ -292,10 +293,28 @@ public interface ChatReceivedListener {
     public void onVGCChatStickerReceived(Message message, FormField formField, boolean isRoute);
 
     /**
-     * Invoked when an invitiation to join a private group (vgc) has been received.
-     * @param message   The actual message that contains the invite.
+     * Invoked when a user has joined a VGC group or has been added to a VGC group.
+     * @param presence   The actual message that contains the invite.
+     * @param groupJid The id of the vgc group
+     * @param jid The id of the user who joined the vgc group
      */
-    public void onVGCInvitationReceived(Message message);
+    public void onVGCUserJoined(Presence presence, String groupJid, String jid);
+
+    /**
+     * Invoked when a user has left a VGC group.
+     * @param presence   The actual message that contains the invite.
+     * @param groupJid The id of the vgc group
+     * @param jid The id of the user who left the vgc group
+     */
+    public void onVGCUserLeft(Presence presence, String groupJid, String jid);
+
+    /**
+     * Invoked when a user has been removed from a VGC group.
+     * @param presence   The actual message that contains the invite.
+     * @param groupJid The id of the vgc group
+     * @param jid The id of the user who was removed from the vgc group
+     */
+    public void onVGCUserRemoved(Presence presence, String groupJid, String jid);
 
     /**
      * Invoked when the subject (known as name) of a private vgc group has been changed.
