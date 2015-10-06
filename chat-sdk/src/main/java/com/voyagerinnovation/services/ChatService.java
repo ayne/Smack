@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.voyagerinnovation.environment.Environment;
@@ -55,6 +56,7 @@ public class ChatService extends Service implements ConnectionListener,
     public VGCMessageManager vgcMessageManager;
     public MUCMessageManager mucMessageManager;
     private ChatReceivedListener chatReceivedListener;
+    private String archiveHost;
 
 
     public class LocalBinder extends Binder {
@@ -83,7 +85,8 @@ public class ChatService extends Service implements ConnectionListener,
 
     public void configureConnection(boolean isDebuggable, String host, int port,
                                     String serviceName, String resource, boolean sendPresence,
-                                    ConnectionConfiguration.SecurityMode securityMode){
+                                    ConnectionConfiguration.SecurityMode securityMode,
+                                    String archiveHost){
         SmackConfiguration.DEBUG = isDebuggable;
 
 //        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
@@ -136,6 +139,8 @@ public class ChatService extends Service implements ConnectionListener,
         p2PMessageManager = new P2PMessageManager(xmpptcpConnection);
         vgcMessageManager = new VGCMessageManager(xmpptcpConnection);
         mucMessageManager = new MUCMessageManager(xmpptcpConnection);
+
+        this.archiveHost = archiveHost;
     }
 
     private void configureConnection() {
@@ -404,7 +409,12 @@ public class ChatService extends Service implements ConnectionListener,
 
         yapToken = connection.getToken();
         ArchiveIQ archiveIq = new ArchiveIQ("0", "0", "0");
-        archiveIq.setTo(Environment.IM_ARCHIVE_HOST);
+        if(!TextUtils.isEmpty(archiveHost)){
+            archiveIq.setTo(archiveHost);
+        }
+        else{
+            archiveIq.setTo(Environment.IM_ARCHIVE_HOST);
+        }
         archiveIq.setStanzaId(null);
         try {
             xmpptcpConnection.sendStanza(archiveIq);
