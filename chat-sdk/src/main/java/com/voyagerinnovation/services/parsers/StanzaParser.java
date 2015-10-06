@@ -13,7 +13,6 @@ import com.voyagerinnovation.model.Event;
 import com.voyagerinnovation.services.ChatReceivedListener;
 import com.voyagerinnovation.util.BabbleImageProcessorUtil;
 
-import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
@@ -25,7 +24,6 @@ import org.jivesoftware.smackx.delay.packet.DelayInformation;
 import org.jivesoftware.smackx.muc.packet.VGCUser;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
-import org.jivesoftware.smackx.xevent.MessageEventManager;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -213,10 +211,6 @@ public class StanzaParser {
             }
         }
 
-        // DO NOT REMOVE!!! THIS IS FOR DELIVERING DISPLAYED NOTIFICATION ON
-        // TYPE CHAT MESSAGES
-        processDeliveredMessage(xmpptcpConnection, chatReceivedListener, message);
-
     }
 
 
@@ -353,29 +347,6 @@ public class StanzaParser {
             chatReceivedListener.onErrorMessageReceived(message);
         }
 
-    }
-
-
-    public static void processDeliveredMessage(XMPPTCPConnection xmpptcpConnection,
-                                               ChatReceivedListener chatReceivedListener,
-                                               Message message) {
-        if (message.getType() == Message.Type.chat ||
-                message.getType() == Message.Type.secret
-                || message.getType() == Message.Type.secret_chat) {
-            MessageEventManager msgEventMgr = new MessageEventManager(
-                    xmpptcpConnection);
-
-            try {
-                msgEventMgr.sendDisplayedNotification(
-                        message.getFrom(),
-                        message.getStanzaId());
-            } catch (SmackException.NotConnectedException e) {
-                e.printStackTrace();
-            }
-
-        } else if (message.getType() == Message.Type.error) {
-            chatReceivedListener.onErrorMessageReceived(message);
-        }
     }
 
 
