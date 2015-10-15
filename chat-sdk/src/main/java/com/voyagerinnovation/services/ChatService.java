@@ -437,7 +437,7 @@ public class ChatService extends Service implements ConnectionListener,
     @Override
     public void connectionClosedOnError(Exception e) {
         Log.d(TAG, "connectionClosedOnError " + e.getMessage());
-        if ("stream:error (conflict) text: Replaced by new connection".equals(e.getMessage())) {
+        if (e.getMessage() != null && e.getMessage().contains("conflict")) {
             Log.d(TAG, "Stream conflict error");
             if(chatReceivedListener != null){
                 chatReceivedListener.onAuthenticationFailed();
