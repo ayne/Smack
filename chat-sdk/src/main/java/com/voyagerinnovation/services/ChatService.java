@@ -406,9 +406,12 @@ public class ChatService extends Service implements ConnectionListener,
         if (chatReceivedListener != null) {
             chatReceivedListener.onAuthenticated(connection);
         }
-
         yapToken = connection.getToken();
-        ArchiveIQ archiveIq = new ArchiveIQ("0", "0", "0");
+
+    }
+
+    public void sendArchiveIq(String LAM, String FRM, String LRM){
+        ArchiveIQ archiveIq = new ArchiveIQ(LAM, FRM, LRM);
         if(!TextUtils.isEmpty(archiveHost)){
             archiveIq.setTo(archiveHost);
         }
@@ -421,7 +424,6 @@ public class ChatService extends Service implements ConnectionListener,
         } catch (SmackException.NotConnectedException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
