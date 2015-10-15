@@ -32,7 +32,7 @@ import org.xmlpull.v1.XmlPullParser;
  */
 public class ChatStateExtension implements ExtensionElement {
 
-    public static final String NAMESPACE = "http://jabber.org/protocol/chatstates";
+    public static final String NAMESPACE = "chatstates";
 
     private final ChatState state;
 
