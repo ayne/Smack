@@ -43,6 +43,7 @@ import org.jivesoftware.smack.compress.packet.Compress;
 import org.jivesoftware.smack.packet.Element;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Route;
 import org.jivesoftware.smack.packet.StreamOpen;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.Presence;
@@ -1010,6 +1011,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                         final String name = parser.getName();
                         switch (name) {
                         case Message.ELEMENT:
+                        case Route.ELEMENT:
                         case IQ.IQ_ELEMENT:
                         case Presence.ELEMENT:
                             try {

@@ -7,7 +7,7 @@ dependencies {
 //    compile project(':smack-core')
 //    compile 'org.igniterealtime.jbosh:jbosh:[0.8,0.9)'
 
-    compile 'org.igniterealtime.smack:smack-core:4.1.1.0'
+    compile 'org.igniterealtime.smack:smack-core:4.1.1.1'
     compile 'org.igniterealtime.jbosh:jbosh:[0.8,0.9)'
 }
 

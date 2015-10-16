@@ -6,7 +6,7 @@ dependencies {
     apply plugin: 'java'
 //    compile project(path: ':smack-core')
 
-    compile 'org.igniterealtime.smack:smack-core:4.1.1.0'
+    compile 'org.igniterealtime.smack:smack-core:4.1.1.1'
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
 

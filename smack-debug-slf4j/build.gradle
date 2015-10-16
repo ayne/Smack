@@ -6,7 +6,7 @@ Connect your favourite slf4j backend of choice to get output inside of it"""
 dependencies {
     apply plugin: 'java'
     //compile project(':smack-core')
-    compile 'org.igniterealtime.smack:smack-core:4.1.1.0'
+    compile 'org.igniterealtime.smack:smack-core:4.1.1.1'
     compile 'org.slf4j:slf4j-api:[1.7,1.8)'
 
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath

@@ -25,6 +25,7 @@ import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Route;
 import org.jivesoftware.smack.packet.Session;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.StartTls;
@@ -135,27 +136,30 @@ public class PacketParserUtils {
 
     /**
      * Tries to parse and return either a Message, IQ or Presence stanza.
-     * 
+     *
      * connection is optional and is used to return feature-not-implemented errors for unknown IQ stanzas.
      *
      * @param parser
      * @return a stanza(/packet) which is either a Message, IQ or Presence.
-     * @throws XmlPullParserException 
-     * @throws SmackException 
-     * @throws IOException 
+     * @throws XmlPullParserException
+     * @throws SmackException
+     * @throws IOException
      */
     public static Stanza parseStanza(XmlPullParser parser) throws XmlPullParserException, IOException, SmackException {
         ParserUtils.assertAtStartTag(parser);
         final String name = parser.getName();
+        LOGGER.log(Level.INFO, "SMACK parse stanza");
         switch (name) {
         case Message.ELEMENT:
             return parseMessage(parser);
+        case Route.ELEMENT:
+            return parseRoute(parser);
         case IQ.IQ_ELEMENT:
             return parseIQ(parser);
         case Presence.ELEMENT:
             return parsePresence(parser);
         default:
-            throw new IllegalArgumentException("Can only parse message, iq or presence, not " + name);
+            throw new IllegalArgumentException("Can only parse message, route, iq or presence, not " + name);
         }
     }
 
@@ -167,7 +171,7 @@ public class PacketParserUtils {
      * <code>getText()</code> if the parser is on START_TAG or END_TAG. So you must not rely on this
      * behavior when using the parser.
      * </p>
-     * 
+     *
      * @return A suitable XmlPullParser for XMPP parsing
      * @throws XmlPullParserException
      */
@@ -195,7 +199,7 @@ public class PacketParserUtils {
      * <code>getText()</code> if the parser is on START_TAG or END_TAG. So you must not rely on this
      * behavior when using the parser.
      * </p>
-     * 
+     *
      * @param reader
      * @return A suitable XmlPullParser for XMPP parsing
      * @throws XmlPullParserException
@@ -211,9 +215,34 @@ public class PacketParserUtils {
      *
      * @param parser the XML parser, positioned at the start of a message packet.
      * @return a Message packet.
-     * @throws IOException 
-     * @throws XmlPullParserException 
-     * @throws SmackException 
+     * @throws IOException
+     * @throws XmlPullParserException
+     * @throws SmackException
+     */
+    public static Route parseRoute(XmlPullParser parser)
+            throws XmlPullParserException, IOException, SmackException {
+        LOGGER.log(Level.INFO, "SMACK parse route");
+        ParserUtils.assertAtStartTag(parser);
+        assert(parser.getName().equals(Route.ELEMENT));
+
+        Route route = new Route();
+        route.setStanzaId(parser.getAttributeValue("", "id"));
+        route.setTo(parser.getAttributeValue("", "to"));
+        route.setFrom(parser.getAttributeValue("", "from"));
+
+        route.setMessage(parseMessage(parser));
+        return route;
+    }
+
+
+    /**
+     * Parses a message packet.
+     *
+     * @param parser the XML parser, positioned at the start of a message packet.
+     * @return a Message packet.
+     * @throws IOException
+     * @throws XmlPullParserException
+     * @throws SmackException
      */
     public static Message parseMessage(XmlPullParser parser)
                     throws XmlPullParserException, IOException, SmackException {
@@ -236,13 +265,13 @@ public class PacketParserUtils {
         message.setMsisdn(parser.getAttributeValue("", "msisdn"));
         message.setSource(parser.getAttributeValue("", "source"));
         message.setTS(parser.getAttributeValue("", "ts"));
-        
+
         // determine message's default language
         String defaultLanguage = null;
         if (language != null && !"".equals(language.trim())) {
             message.setLanguage(language);
             defaultLanguage = language;
-        } 
+        }
         else {
             defaultLanguage = Stanza.getDefaultLanguage();
         }
@@ -315,7 +344,7 @@ public class PacketParserUtils {
      * </p>
      * This method is used for the parts where the XMPP specification requires elements that contain
      * only text or are the empty element.
-     * 
+     *
      * @param parser
      * @return the textual content of the element as String
      * @throws XmlPullParserException
@@ -386,7 +415,7 @@ public class PacketParserUtils {
      * closing tag of the same depth is returned as String.
      * </p>
      * Note that only the outermost namespace attributes ("xmlns") will be returned, not nested ones.
-     * 
+     *
      * @param parser the XML pull parser
      * @return the content of a tag
      * @throws XmlPullParserException if parser encounters invalid XML
@@ -423,7 +452,7 @@ public class PacketParserUtils {
      * <p>
      * In particular Android's XmlPullParser does not support XML_ROUNDTRIP.
      * </p>
-     * 
+     *
      * @param parser
      * @param depth
      * @param fullNamespaces
@@ -519,9 +548,9 @@ public class PacketParserUtils {
      *
      * @param parser the XML parser, positioned at the start of a presence packet.
      * @return a Presence packet.
-     * @throws IOException 
-     * @throws XmlPullParserException 
-     * @throws SmackException 
+     * @throws IOException
+     * @throws XmlPullParserException
+     * @throws SmackException
      */
     public static Presence parsePresence(XmlPullParser parser)
                     throws XmlPullParserException, IOException, SmackException {
@@ -611,9 +640,9 @@ public class PacketParserUtils {
      *
      * @param parser the XML parser, positioned at the start of an IQ packet.
      * @return an IQ object.
-     * @throws XmlPullParserException 
-     * @throws IOException 
-     * @throws SmackException 
+     * @throws XmlPullParserException
+     * @throws IOException
+     * @throws SmackException
      */
     public static IQ parseIQ(XmlPullParser parser) throws XmlPullParserException, IOException, SmackException {
         ParserUtils.assertAtStartTag(parser);
@@ -700,8 +729,8 @@ public class PacketParserUtils {
      *
      * @param parser the XML parser, positioned at the start of the mechanisms stanza.
      * @return a collection of Stings with the mechanisms included in the mechanisms stanza.
-     * @throws IOException 
-     * @throws XmlPullParserException 
+     * @throws IOException
+     * @throws XmlPullParserException
      */
     public static Collection<String> parseMechanisms(XmlPullParser parser)
                     throws XmlPullParserException, IOException {
@@ -778,11 +807,11 @@ public class PacketParserUtils {
 
     /**
      * Parses SASL authentication error packets.
-     * 
+     *
      * @param parser the XML parser.
      * @return a SASL Failure packet.
-     * @throws IOException 
-     * @throws XmlPullParserException 
+     * @throws IOException
+     * @throws XmlPullParserException
      */
     public static SASLFailure parseSASLFailure(XmlPullParser parser) throws XmlPullParserException, IOException {
         final int initialDepth = parser.getDepth();
@@ -817,7 +846,7 @@ public class PacketParserUtils {
      * @param parser the XML parser.
      * @return an stream error packet.
      * @throws XmlPullParserException if an exception occurs while parsing the packet.
-     * @throws SmackException 
+     * @throws SmackException
      */
     public static StreamError parseStreamError(XmlPullParser parser) throws IOException, XmlPullParserException,
                     SmackException {
@@ -868,9 +897,9 @@ public class PacketParserUtils {
      *
      * @param parser the XML parser.
      * @return an error sub-packet.
-     * @throws IOException 
-     * @throws XmlPullParserException 
-     * @throws SmackException 
+     * @throws IOException
+     * @throws XmlPullParserException
+     * @throws SmackException
      */
     public static XMPPError parseError(XmlPullParser parser)
                     throws XmlPullParserException, IOException, SmackException {
@@ -926,7 +955,7 @@ public class PacketParserUtils {
                     IOException, SmackException {
         return parseExtensionElement(elementName, namespace, parser);
     }
- 
+
     /**
      * Parses an extension element.
      *

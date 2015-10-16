@@ -46,19 +46,14 @@ public class StanzaParser {
      */
     public static void processPacket(Stanza packet, XMPPTCPConnection xmpptcpConnection,
                                      ChatReceivedListener chatReceivedListener) {
-        if (packet instanceof Presence) {
 
-            Log.d("StanzaParser", "stanza string " + packet.toXML().toString());
+        if (packet instanceof Presence) {
 
             Presence presence = (Presence) packet;
             //TODO process presence
             if (presence.getExtension(new VGCUser().getNamespace()) != null) {
-                Log.d("StanzaParser", "VGCUser <3 :)");
                 VGCUser vgcUser = (VGCUser) presence
                         .getExtension(new VGCUser().getNamespace());
-                Log.d("StanzaParser", "mUser created");
-                Log.d("StanzaParser", "STATUS " + vgcUser.getStatus().toString());
-                Log.d("StanzaParser", "JID " + vgcUser.getItem().getJid());
 
                 String jid = vgcUser.getItem().getJid();
                 String from = presence.getFrom();
@@ -143,6 +138,7 @@ public class StanzaParser {
                 if (to != null && to.contains(Environment.IM_CHATROOM_SUFFIX)) {
                     Log.w(TAG, "private msg from chatroom archive recovered but ignored");
                 } else {
+                    Log.d("SMACK", "sending true route xml " + message.toXML().toString());
                     identifyMessagePacket(message, xmpptcpConnection, chatReceivedListener, true);
                 }
             }
@@ -326,6 +322,7 @@ public class StanzaParser {
                                            boolean isRoute) {
 
         if (message.getType() == Message.Type.chat) {
+            Log.d("SMACK", " plainMessage type chat isRoute " + isRoute);
             chatReceivedListener.onChatReceived(message, isRoute);
         } else if (message.getType() == Message.Type.secret_chat) {
             chatReceivedListener.onAnonymousChatReceived(message, isRoute);
