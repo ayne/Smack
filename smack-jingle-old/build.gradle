@@ -11,7 +11,7 @@ dependencies {
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 
     compile 'org.igniterealtime.smack:smack-core:4.1.1.1'
-    compile 'org.igniterealtime.smack:smack-extensions:4.1.1.1'
+    compile 'org.igniterealtime.smack:smack-extensions:4.1.1.2'
     compile 'javax.media:jmf:2.1.1e'
     compile files('libs/jspeex-0.9.7-jfcom.jar', 'libs/jstun.jar', 'libs/Speex.jar')
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath

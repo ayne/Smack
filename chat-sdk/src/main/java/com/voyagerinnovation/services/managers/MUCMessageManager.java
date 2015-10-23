@@ -15,6 +15,7 @@ import org.jivesoftware.smackx.muc.RoomInfo;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -353,7 +354,7 @@ public class MUCMessageManager {
      * @param chatroomJid the jid of the chatroom that will receive the Message.
      * @return Message  The actual Message that was sent.
      */
-    public Message sendVCFAttachment(String body,
+    public Message sendVCFAttachment(ArrayList<String> bodies,
                                   String chatroomJid){
 
         Message message = new Message();
@@ -362,7 +363,11 @@ public class MUCMessageManager {
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.VCARD);
-        field.addValue(body);
+        if(bodies != null){
+            for(String body: bodies){
+                field.addValue(body);
+            }
+        }
         form.addField(field);
         message.addExtension(form);
         return message;

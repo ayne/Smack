@@ -15,6 +15,8 @@ import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 import org.jivesoftware.smackx.xevent.MessageEventManager;
 
+import java.util.ArrayList;
+
 /**
  * Created by charmanesantiago on 4/11/15.
  */
@@ -734,7 +736,7 @@ public class P2PMessageManager {
      *                     inserted.
      * @return Message          The actual Message that was sent.
      */
-    public Message sendVCFAttachment(String packetId, String body, String toJid, String
+    public Message sendVCFAttachment(String packetId, ArrayList<String> bodies, String toJid, String
             senderMsisdn,
                                      String senderName) {
 
@@ -749,7 +751,12 @@ public class P2PMessageManager {
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.VCARD);
-        field.addValue(body);
+        if(bodies != null){
+            for(String body: bodies){
+                field.addValue(body);
+            }
+        }
+
         form.addField(field);
 
         // String currentTimeDate = ""+System.currentTimeMillis();

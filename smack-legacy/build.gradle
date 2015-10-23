@@ -10,7 +10,7 @@ dependencies {
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 
     compile 'org.igniterealtime.smack:smack-core:4.1.1.1'
-    compile 'org.igniterealtime.smack:smack-extensions:4.1.1.1'
+    compile 'org.igniterealtime.smack:smack-extensions:4.1.1.2'
 //    testCompile project(':smack-core').sourceSets.test.runtimeClasspath
 }
 

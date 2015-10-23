@@ -80,7 +80,7 @@ public class MessageEventManager extends Manager {
                 Message message = (Message) packet;
                 MessageEvent messageEvent =
                     (MessageEvent) message.getExtension("x", "jabber:x:event");
-                if (messageEvent.isMessageEventRequest()) {
+                if (messageEvent!= null && messageEvent.isMessageEventRequest()) {
                     // Fire event for requests of message events
                     for (String eventType : messageEvent.getEventTypes())
                         fireMessageEventRequestListeners(
@@ -89,11 +89,14 @@ public class MessageEventManager extends Manager {
                             eventType.concat("NotificationRequested"));
                 } else
                     // Fire event for notifications of message events
-                    for (String eventType : messageEvent.getEventTypes())
-                        fireMessageEventNotificationListeners(
-                            message.getFrom(),
-                            messageEvent.getStanzaId(),
-                            eventType.concat("Notification"));
+                    if(messageEvent != null){
+                        for (String eventType : messageEvent.getEventTypes())
+                            fireMessageEventNotificationListeners(
+                                message.getFrom(),
+                                messageEvent.getStanzaId(),
+                                eventType.concat("Notification"));
+                    }
+
             }
         }, PACKET_FILTER);
     }

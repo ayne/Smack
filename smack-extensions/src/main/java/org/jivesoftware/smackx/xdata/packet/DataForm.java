@@ -206,10 +206,11 @@ public class DataForm implements ExtensionElement {
      */
     public void addField(FormField field) {
         String fieldVariableName = field.getVariable();
-        if (fieldVariableName != null && getField(fieldVariableName) != null) {
-            throw new IllegalArgumentException("This data form already contains a form field with the variable name '"
-                            + fieldVariableName + "'");
-        }
+//        Removed to support Babble's multiple value in VCF
+//        if (fieldVariableName != null && getField(fieldVariableName) != null) {
+//            throw new IllegalArgumentException("This data form already contains a form field with the variable name '"
+//                            + fieldVariableName + "'");
+//        }
         synchronized (fields) {
             fields.add(field);
         }

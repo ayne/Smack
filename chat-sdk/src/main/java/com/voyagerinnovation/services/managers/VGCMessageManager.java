@@ -26,6 +26,7 @@ import org.jivesoftware.smackx.xdata.Form;
 import org.jivesoftware.smackx.xdata.FormField;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -600,7 +601,7 @@ public class VGCMessageManager {
      *                     inserted.
      * @return Message          The actual Message that was sent.
      */
-    public Message sendVCFAttachment(String packetId, String body, String groupJid,
+    public Message sendVCFAttachment(String packetId, ArrayList<String> bodies, String groupJid,
                                      String senderMsisdn, String senderName) {
 
         Message newMessage = new Message();
@@ -615,7 +616,12 @@ public class VGCMessageManager {
 
         DataForm form = new DataForm(DataForm.Type.form);
         FormField field = new FormField(Constants.VCARD);
-        field.addValue(body);
+        if(bodies != null){
+            for(String body: bodies){
+                field.addValue(body);
+            }
+        }
+
         form.addField(field);
         newMessage.addExtension(form);
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor
