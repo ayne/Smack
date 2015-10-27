@@ -7,6 +7,8 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.id.ArchiveResultIQ;
 import org.jivesoftware.smackx.xdata.FormField;
 
+import java.util.List;
+
 /**
  * This class is the interface for listening to ChatService's XMPP connection and authentication states.
  * This also provides callbacks for receiving various messages like chat, secretchat, chatLocation,
@@ -124,7 +126,7 @@ public interface ChatReceivedListener {
      *                  the message originated from the logged in user, but received it via archive.
      *                  Or in short, an archived outgoing message. false otherwise.
      */
-    public void onChatVCFReceived(Message message, FormField formField, boolean isRoute);
+    public void onChatVCFReceived(Message message, List<FormField> formFields, boolean isRoute);
 
     /**
      * Invoked when a chat with location attachment is received.
@@ -174,7 +176,7 @@ public interface ChatReceivedListener {
      *                  the message originated from the logged in user, but received it via archive.
      *                  Or in short, an archived outgoing message. false otherwise.
      */
-    public void onSecretChatVCFReceived(Message message, FormField formField, boolean isRoute);
+    public void onSecretChatVCFReceived(Message message, List<FormField> formFields, boolean isRoute);
 
     /**
      * Invoked when a secret (disappearing message) with location attachment is received.
@@ -220,7 +222,7 @@ public interface ChatReceivedListener {
      *                      the message originated from the logged in user, but received it via archive.
      *                      Or in short, an archived outgoing message. false otherwise.
      */
-    public void onAnonymousChatVCFReceived(Message message, FormField formField, boolean isRoute);
+    public void onAnonymousChatVCFReceived(Message message, List<FormField> formField, boolean isRoute);
 
     /**
      * Invoked when an anonymous chat (type secret_chat) with location attachment is received.
@@ -270,7 +272,7 @@ public interface ChatReceivedListener {
      *                      the message originated from the logged in user, but received it via archive.
      *                      Or in short, an archived outgoing message. false otherwise.
      */
-    public void onVGCChatVCFReceived(Message message, FormField formField, boolean isRoute);
+    public void onVGCChatVCFReceived(Message message, List<FormField> formField, boolean isRoute);
 
     /**
      * Invoked when a chat with location  from a private group is received (type vgc).
@@ -349,7 +351,7 @@ public interface ChatReceivedListener {
      *                  the message originated from the logged in user, but received it via archive.
      *                  Or in short, an archived outgoing message. false otherwise.
      */
-    public void onAnonymousVGCChatVCFReceived(Message message, FormField formField, boolean isRoute);
+    public void onAnonymousVGCChatVCFReceived(Message message, List<FormField> formField, boolean isRoute);
 
     /**
      * Invoked when anonymous message (type secret_vgc) with location in private vgc group is received,
@@ -390,7 +392,7 @@ public interface ChatReceivedListener {
      * @param message   The groupchat message.
      * @param formField The FormField that contains the vcf file of the contact shared.
      */
-    public void onPublicChatVCFReceived(Message message, FormField formField);
+    public void onPublicChatVCFReceived(Message message, List<FormField> formField);
 
     /**
      * Invoked when a public chatroom message with location attachment is received (type groupchat)

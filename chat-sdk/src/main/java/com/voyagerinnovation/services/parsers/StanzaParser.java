@@ -30,6 +30,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -182,7 +183,8 @@ public class StanzaParser {
 
             for (FormField field : form.getFields()) {
                 if (Constants.VCARD.equals(field.getVariable())) {
-                    processVCardAttachment(message, field, chatReceivedListener, isRoute);
+                    processVCardAttachment(message, form.getFields(), chatReceivedListener, isRoute);
+                    break;
                 } else if (Constants.ATTACHMENT.equals(field
                         .getVariable())) {
                     processFileAttachment(message, field, chatReceivedListener, isRoute);
@@ -254,21 +256,21 @@ public class StanzaParser {
     }
 
 
-    private static void processVCardAttachment(Message message, FormField formField,
+    private static void processVCardAttachment(Message message, List<FormField> formFields,
                                                ChatReceivedListener chatReceivedListener, boolean
                                                        isRoute) {
         if (message.getType() == Message.Type.chat) {
-            chatReceivedListener.onChatVCFReceived(message, formField, isRoute);
+            chatReceivedListener.onChatVCFReceived(message, formFields, isRoute);
         } else if (message.getType() == Message.Type.secret) {
-            chatReceivedListener.onSecretChatVCFReceived(message, formField, isRoute);
+            chatReceivedListener.onSecretChatVCFReceived(message, formFields, isRoute);
         } else if (message.getType() == Message.Type.secret_chat) {
-            chatReceivedListener.onAnonymousChatVCFReceived(message, formField, isRoute);
+            chatReceivedListener.onAnonymousChatVCFReceived(message, formFields, isRoute);
         } else if (message.getType() == Message.Type.vgc) {
-            chatReceivedListener.onVGCChatVCFReceived(message, formField, isRoute);
+            chatReceivedListener.onVGCChatVCFReceived(message, formFields, isRoute);
         } else if (message.getType() == Message.Type.secret_vgc) {
-            chatReceivedListener.onAnonymousVGCChatVCFReceived(message, formField, isRoute);
+            chatReceivedListener.onAnonymousVGCChatVCFReceived(message, formFields, isRoute);
         } else if (message.getType() == Message.Type.groupchat) {
-            chatReceivedListener.onPublicChatVCFReceived(message, formField);
+            chatReceivedListener.onPublicChatVCFReceived(message, formFields);
         }
 
     }
