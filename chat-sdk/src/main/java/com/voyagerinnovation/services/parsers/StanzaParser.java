@@ -61,9 +61,9 @@ public class StanzaParser {
                 if (from.contains("/")) from = from.split("/")[0];
                 Set<VGCUser.Status> setStatus = vgcUser.getStatus();
                 if (presence.isAvailable()) {
-                    if (setStatus.contains(VGCUser.Status.create(110))) {
+                    //if (setStatus.contains(VGCUser.Status.create(110))) {
                         chatReceivedListener.onVGCUserJoined(presence, from, jid);
-                    }
+                    //}
                 } else {
                     /**
                      * In presence unavailable, status code 321 means the user was removed by
