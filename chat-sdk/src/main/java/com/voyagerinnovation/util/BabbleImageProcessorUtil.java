@@ -17,19 +17,21 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-
 /**
  * Utility class for generating scaled Bitmaps and Thumbnails.
  * @author charmanesantiago
  */
 public class BabbleImageProcessorUtil {
-
     private static final String TAG = BabbleImageProcessorUtil.class.getSimpleName();
-    static public final String THUMBNAIL_DESTINATION_URL = Environment
+
+    public static final String TYPE_VIDEO = "video";
+    public static final String TYPE_IMAGE = "image";
+    public static final String THUMBNAIL_DESTINATION_URL = Environment
             .getExternalStorageDirectory() + "/download/thumb/";
 
-    static public String generateThumbnail(String id, String url,
-                                                 String mimeType) {
+    private static final int THUMBNAIL_MAX_DIMENSION = 600;
+
+    public static String generateThumbnail(String id, String url, String mimeType) {
         String result = null;
         String type = null;
 
@@ -38,24 +40,20 @@ public class BabbleImageProcessorUtil {
         }
 
         if (type != null) {
-            if ("video".equals(type)) {
+            if (TYPE_VIDEO.equals(type)) {
                 Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(url,
                         Thumbnails.MICRO_KIND);
                 persistThumbnail(thumbnail, id);
                 result = convertToBase64(thumbnail);
                 thumbnail.recycle();
-            } else if ("image".equals(type)) {
-                Bitmap bitmap = getResizeBitmap(url);
-                if (bitmap == null) {
-                    return null;
-                } else {
-                    Bitmap thumbnail = ThumbnailUtils.extractThumbnail(bitmap,
-                            bitmap.getWidth() / 2,
-                            bitmap.getHeight() / 2, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+            } else if (TYPE_IMAGE.equals(type)) {
+                Bitmap thumbnail = getResizeBitmap(url);
+                if (thumbnail != null) {
                     persistThumbnail(thumbnail, id);
                     result = convertToBase64(thumbnail);
                     thumbnail.recycle();
-                    bitmap.recycle();
+                } else {
+                    return null;
                 }
             }
         }
@@ -63,10 +61,7 @@ public class BabbleImageProcessorUtil {
         return result;
     }
 
-    static public void persistThumbnail(Bitmap bitmap, String id) {
-
-        // String result = null;
-
+    public static void persistThumbnail(Bitmap bitmap, String id) {
         File fileDir = new File(THUMBNAIL_DESTINATION_URL);
         if (!fileDir.exists()) {
             if(!fileDir.mkdirs()){
@@ -96,10 +91,11 @@ public class BabbleImageProcessorUtil {
         }
     }
 
-    static private String convertToBase64(Bitmap bitmap) {
+    private static String convertToBase64(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(CompressFormat.JPEG, 50, baos);
         byte[] b = baos.toByteArray();
+        Log.d(TAG, "Base 64 byte length " + b.length);
         return Base64.encodeToString(b, 0);
     }
 
@@ -111,45 +107,49 @@ public class BabbleImageProcessorUtil {
         int inSampleSize = 1;
 
         if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
+            while ((height / inSampleSize) > reqHeight &&
+                    (width / inSampleSize) > reqWidth) {
                 inSampleSize *= 2;
             }
         }
 
+        Log.d(TAG, "In Sample Size: " + inSampleSize);
         return inSampleSize;
     }
 
     public static Bitmap getResizeBitmap(String existingFileName) {
+        existingFileName = existingFileName.replace("file://", "");
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-
         options.inJustDecodeBounds = true;
-        existingFileName = existingFileName.replace("file://", "");
-        Log.d(TAG, "existingFileName: " + existingFileName);
-
         BitmapFactory.decodeFile(existingFileName, options);
+
         int width = options.outWidth;
         int height = options.outHeight;
 
-        int downscaleSize = width > height ? width : height;
-        float downscaleFactor = downscaleSize / 1000.00f;
-        downscaleFactor = (downscaleFactor < 1.00f) ? 1 : downscaleFactor;
+        Log.d(TAG, "Original bitmap width: " + width + " height: " + height);
+        if (width > THUMBNAIL_MAX_DIMENSION || height > THUMBNAIL_MAX_DIMENSION) {
+            if (width > height) {
+                double ratio = width * 1.0 / THUMBNAIL_MAX_DIMENSION;
 
-        int newWidth = (int) (width / downscaleFactor);
-        int newHeight = (int) (height / downscaleFactor);
+                width = THUMBNAIL_MAX_DIMENSION;
+                height = (int)(height * 1.0 / ratio);
+            } else if (width < height) {
+                double ratio = height / THUMBNAIL_MAX_DIMENSION;
 
-        options.inSampleSize = BabbleImageProcessorUtil.calculateInSampleSize(options,
-                newWidth, newHeight);
+                width = (int)(width * 1.0 / ratio);
+                height = THUMBNAIL_MAX_DIMENSION;
+            } else {
+                width = THUMBNAIL_MAX_DIMENSION;
+                height = THUMBNAIL_MAX_DIMENSION;
+            }
+        }
+
+        options.inSampleSize = calculateInSampleSize(options, width, height);
         options.inJustDecodeBounds = false;
 
         Bitmap bitmap = BitmapFactory.decodeFile(existingFileName, options);
+        Log.d(TAG, "Resized bitmap width: " + bitmap.getWidth() + " height: " + bitmap.getHeight());
         if (bitmap == null) {
             return null;
         }
@@ -160,27 +160,16 @@ public class BabbleImageProcessorUtil {
 
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
 
-//            if (orientation == ExifInterface.ORIENTATION_NORMAL) {
-//
-//                // Do nothing. The original image is fine.
-//            } else
             if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
-
                 matrix.postRotate(90);
-
             } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
-
                 matrix.postRotate(180);
-
             } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
-
                 matrix.postRotate(270);
-
             }
             return Bitmap.createBitmap(bitmap, 0, 0,
                     bitmap.getWidth(),
                     bitmap.getHeight(), matrix, false);
-
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -188,7 +177,5 @@ public class BabbleImageProcessorUtil {
             e.printStackTrace();
             return null;
         }
-
     }
-
 }
