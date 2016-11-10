@@ -86,7 +86,7 @@ public class ChatService extends Service implements ConnectionListener,
     public void configureConnection(boolean isDebuggable, String host, int port,
                                     String serviceName, String resource, boolean sendPresence,
                                     ConnectionConfiguration.SecurityMode securityMode,
-                                    String archiveHost){
+                                    String archiveHost) {
         SmackConfiguration.DEBUG = isDebuggable;
 
 //        SASLAuthentication.unregisterSASLMechanism("org.jivesoftware.smack.sasl.javax
@@ -107,20 +107,20 @@ public class ChatService extends Service implements ConnectionListener,
 // .SASLXOauth2Mechanism");
 
 
-        XMPPTCPConnectionConfiguration.Builder connectionConfigBuilder = XMPPTCPConnectionConfiguration.builder()
+        XMPPTCPConnectionConfiguration connectionConfig =
+                XMPPTCPConnectionConfiguration.builder()
                 .setHost(host)
                 .setPort(port)
                 .setServiceName(serviceName)
                 .setResource(resource)
                 .setSendPresence(sendPresence)
                 .setSecurityMode(securityMode)
-                .setDebuggerEnabled(isDebuggable);
+                .setSocketFactory(securityMode != ConnectionConfiguration.SecurityMode.disabled ?
+                        new DummySSLSocketFactory() : null)
+                .setDebuggerEnabled(isDebuggable)
+                .build();
 
-        if (securityMode != ConnectionConfiguration.SecurityMode.disabled) {
-            connectionConfigBuilder.setSocketFactory(new DummySSLSocketFactory());
-        }
-
-        xmpptcpConnection = new XMPPTCPConnection(connectionConfigBuilder.build());
+        xmpptcpConnection = new XMPPTCPConnection(connectionConfig);
         xmpptcpConnection.addConnectionListener(this);
         xmpptcpConnection.addSyncStanzaListener(this, this);
         xmpptcpConnection.setRosterEnabled(false);
@@ -348,7 +348,7 @@ public class ChatService extends Service implements ConnectionListener,
     }
 
     public void disconnect() {
-        if(chatReceivedListener != null){
+        if (chatReceivedListener != null) {
             chatReceivedListener.onDisconnecting();
         }
         new Thread() {
@@ -368,6 +368,7 @@ public class ChatService extends Service implements ConnectionListener,
 
     /**
      * Method to set the ChatReceivedListener for this service.
+     *
      * @param chatReceivedListener ChatReceivedListener
      */
     public void setOnChatReceivedListener(ChatReceivedListener chatReceivedListener) {
@@ -412,12 +413,11 @@ public class ChatService extends Service implements ConnectionListener,
 
     }
 
-    public void sendArchiveIq(String LAM, String FRM, String LRM){
+    public void sendArchiveIq(String LAM, String FRM, String LRM) {
         ArchiveIQ archiveIq = new ArchiveIQ(LAM, FRM, LRM);
-        if(!TextUtils.isEmpty(archiveHost)){
+        if (!TextUtils.isEmpty(archiveHost)) {
             archiveIq.setTo(archiveHost);
-        }
-        else{
+        } else {
             archiveIq.setTo(Environment.IM_ARCHIVE_HOST);
         }
         archiveIq.setStanzaId(null);
@@ -431,7 +431,7 @@ public class ChatService extends Service implements ConnectionListener,
     @Override
     public void connectionClosed() {
         Log.d(TAG, "connection closed");
-        if(chatReceivedListener != null){
+        if (chatReceivedListener != null) {
             chatReceivedListener.onDisconnected();
         }
     }
@@ -441,12 +441,11 @@ public class ChatService extends Service implements ConnectionListener,
         Log.d(TAG, "connectionClosedOnError " + e.getMessage());
         if (e.getMessage() != null && e.getMessage().contains("conflict")) {
             Log.d(TAG, "Stream conflict error");
-            if(chatReceivedListener != null){
+            if (chatReceivedListener != null) {
                 chatReceivedListener.onAuthenticationFailed();
             }
-        }
-        else{
-            if(chatReceivedListener != null){
+        } else {
+            if (chatReceivedListener != null) {
                 chatReceivedListener.onDisconnected();
             }
         }
