@@ -107,18 +107,20 @@ public class ChatService extends Service implements ConnectionListener,
 // .SASLXOauth2Mechanism");
 
 
-        XMPPTCPConnectionConfiguration mConnectionConfig = XMPPTCPConnectionConfiguration.builder()
+        XMPPTCPConnectionConfiguration.Builder connectionConfigBuilder = XMPPTCPConnectionConfiguration.builder()
                 .setHost(host)
                 .setPort(port)
                 .setServiceName(serviceName)
                 .setResource(resource)
                 .setSendPresence(sendPresence)
                 .setSecurityMode(securityMode)
-                .setSocketFactory(new DummySSLSocketFactory())
-                .setDebuggerEnabled(isDebuggable)
-                .build();
+                .setDebuggerEnabled(isDebuggable);
 
-        xmpptcpConnection = new XMPPTCPConnection(mConnectionConfig);
+        if (securityMode != ConnectionConfiguration.SecurityMode.disabled) {
+            connectionConfigBuilder.setSocketFactory(new DummySSLSocketFactory());
+        }
+
+        xmpptcpConnection = new XMPPTCPConnection(connectionConfigBuilder.build());
         xmpptcpConnection.addConnectionListener(this);
         xmpptcpConnection.addSyncStanzaListener(this, this);
         xmpptcpConnection.setRosterEnabled(false);
